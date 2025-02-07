@@ -350,7 +350,10 @@ async function fetchData(start: number) {
   const url =
     api_url + '/' + core.value + '?' + params + '&' + control_params.join('&')
   console.log("Trying " + url)
-  const nq = await fetch(url)
+  const nq = await fetch(url, {
+    method: 'get',
+    mode: 'cors',
+    credentials: 'include'})
     .then(response => {
       if (response.ok) {
         return response.json()
