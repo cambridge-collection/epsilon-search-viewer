@@ -10,14 +10,13 @@ const props = defineProps({
   subfacets: { type: Object, required: true },
   q_params_tidied: { type: Object, required: true },
   is_subgroup: { type: Boolean, required: true },
-  router: { type: Object, required: true },
 })
 
 const params = computed(() => {
   return props.query_params
 })
 
-const mapped_param_name = computed(() => {
+const mapped_param_name = computed<string>(() => {
   let result = props.param_name
   if (/f\d+-(year|year-month|year-month-day)$/.test(props.param_name)) {
     result = 'f1-date'
@@ -25,7 +24,7 @@ const mapped_param_name = computed(() => {
   return result
 })
 
-function is_selected(value: string) {
+function is_selected<boolean>(value: string) {
   const name_root = mapped_param_name.value.replace(/^f\d+-/, '')
   const facetRegex = new RegExp('^f\\d+-'+ name_root, 'g')
   const keys: Array<string> = Object.keys(params['value']).filter((i) => (i == mapped_param_name.value || facetRegex.test(i)) )
@@ -217,7 +216,6 @@ function remove_vals(
               :query_params="query_params"
               :subfacets="subfacets"
               v-bind:is_subgroup="true"
-              v-bind:router="router"
               v-bind:q_params_tidied="props.q_params_tidied"
               :key="JSON.stringify(route.fullPath) + JSON.stringify(sub)"
             />

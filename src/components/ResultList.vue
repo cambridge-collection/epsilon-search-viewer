@@ -1,107 +1,38 @@
 <script lang="ts" setup>
-import { inject, ref, computed, onBeforeMount } from 'vue'
-import { useRouter, useRoute, stringifyQuery } from 'vue-router'
-import ResultItem from '@/components/ResultItem.vue'
-import FacetBlock from '@/components/FacetBlock.vue'
-import CamplPageHeader from '@/components/campl-page-header.vue'
-import 'vue-awesome-paginate/dist/style.css'
-import { CSpinner } from '@coreui/vue'
+import { ref, computed, onMounted } from 'vue';
+import { useRouter, useRoute, stringifyQuery } from 'vue-router';
+import ResultItem from '@/components/ResultItem.vue';
+import FacetBlock from '@/components/FacetBlock.vue';
+import CamplPageHeader from '@/components/campl-page-header.vue';
+import NoResults from '@/components/NoResults.vue';
+import 'vue-awesome-paginate/dist/style.css';
+import { CSpinner } from '@coreui/vue';
+import { _get_first_value, _tracer_bullet } from '@/lib/utils';
+import * as implementation from '@/implementationConfig'
 
-const router = useRouter()
-const route = useRoute()
-const api_url = inject('api_url')
-const commits = ref(<any[]>[])
-const facets = ref(<any>{})
-const core = computed(() => {
-  const tc = 'tc' in route.query && route.query['tc'] ? route.query['tc'] : ''
-  return tc == 'pages' ? 'pages' : 'items'
-})
-const is_loading = ref(true)
-const is_error = ref(<any>{'bool': false, message: ""})
+const router = useRouter();
+const route = useRoute();
 
-// Add any other desired facets into this array
-// They will be displayed in that order
-const desired_facets: string[] = [
-  'f1-document-type',
-  'f1-author',
-  'f1-addressee',
-  'f1-correspondent',
-  'f1-year',
-  'f1-repository',
-  'f1-volume',
-  'f1-entry-cancelled',
-  'f1-document-online',
-  'f1-letter-published',
-  'f1-translation-published',
-  'f1-footnotes-published',
-  'f1-has-tnotes',
-  'f1-has-cdnotes',
-  'f1-has-annotations',
-  'f1-linked-to-cudl-images',
-  'f1-darwin-letter',
-  's-commentary',
-  's-key-stage',
-  's-ages',
-  's-topics',
-]
-
-// Enter facet details here.
-
-const facet_key = {
-  'f1-document-type': { name: 'Document type', count: 5 },
-  'f1-author': { name: 'Author', count: 5 },
-  'f1-addressee': { name: 'Addressee', count: 5 },
-  'f1-correspondent': { name: 'Correspondent', count: 5 },
-  'f1-year': { name: 'Date', count: 999 },
-  'f1-repository': { name: 'Repository', count: 5 },
-  'f1-volume': { name: 'Volume', count: 5 },
-  'f1-entry-cancelled': { name: 'Entry cancelled', count: 5 },
-  'f1-document-online': { name: 'Document online', count: 5 },
-  'f1-letter-published': { name: 'Letter published', count: 5 },
-  'f1-translation-published': { name: 'Translation published', count: 5 },
-  'f1-footnotes-published': { name: 'Footnotes published', count: 5 },
-  'f1-has-tnotes': { name: 'Has tnotes', count: 5 },
-  'f1-has-cdnotes': { name: 'Has cdnotes', count: 5 },
-  'f1-has-annotations': { name: 'Has annotations', count: 5 },
-  'f1-linked-to-cudl-images': { name: 'Linked to CDL images', count: 5},
-  'f1-darwin-letter': { name: 'Darwin letter', count: 5},
-  's-commentary': { name: 'Commentary', count: 5 },
-  's-key-stage': { name: 'Key Stage', count: 5 },
-  's-ages': { name: 'Learning Band', count: 5 },
-  's-topics': { name: 'Topics', count: 5 },
-}
-
-const advanced_params = [
-  'text',
-  'sectionType',
-  'search-addressee',
-  'search-author',
-  'search-correspondent',
-  'year',
-  'month',
-  'day',
-  'year-max',
-  'month-max',
-  'day-max',
-  'search-date-type',
-  'exclude-widedate',
-  'search-repository',
-  'exclude-cancelled',
-]
-
+const commits = ref(<any[]>[]);
+const facets = ref(<any>{});
+const is_loading = ref<boolean>(true);
+const is_error = ref<any>({ bool: false, message: "" });
 const items_per_page = 20
+const total = ref<number>(0);
+const currentPage = ref<number>(get_current_page());
+
+const core = computed<'pages' | 'items'>(() => _get_first_value(route.query?.tc ?? null) === 'pages' ? 'pages' : 'items' )
+// Update sort
+const sort = computed(() => 'sort' in route.query ? route.query['sort'] : 'score')
+
+const fullpath_uriencoded = computed<string>(() => encodeURIComponent(route.fullPath) )
+
+const paginate_results = computed<boolean>(() => total.value >= items_per_page )
 
 function get_current_page(): number {
-  let result: number = 1
-  if ('page' in route.query && /^\d+$/.test(String(route.query['page']))) {
-    result = Number(route.query['page'])
-  }
-  return result
+  return ('page' in route.query && /^\d+$/.test(String(route.query['page']))) ? Number(route.query['page']): 1;
 }
 
-const currentPage = ref(get_current_page())
-
-let total = ref(0)
 
 // These are the search params
 //const q_params_tidied: any = {}
@@ -147,9 +78,6 @@ const facets_key = computed(() => {
   return p
 })
 
-const fullpath_uriencoded = computed(() => {
-  return encodeURIComponent(route.fullPath)
-})
 
 // Remove search-date-type if not date query terms are entered
 if (
@@ -290,9 +218,6 @@ const query_params: any = computed(() => {
   return p
 })
 
-const sort = computed(() => {
-  return 'sort' in route.query ? route.query['sort'] : 'score'
-})
 const sp = { ...query_params.value }
 delete sp['sort']
 delete sp['tc']
@@ -308,7 +233,7 @@ const keyword = computed(() => {
 
 const advanced_query_string = computed(() => {
   const params: any = {}
-  advanced_params.forEach(p => {
+  implementation.advanced_params.forEach(p => {
     if (p in q_params_tidied.value && q_params_tidied.value[p]) {
       params[p] = q_params_tidied.value[p]
     }
@@ -342,9 +267,7 @@ function tab_href(name: string) {
   return path
 }
 
-const paginated_results = computed(() => total.value >= items_per_page )
-
-function throw_error(error: any) {
+function throw_error(error: string) {
   is_error.value['bool'] = true
   is_error.value['message'] = error
   is_loading.value = false
@@ -352,19 +275,12 @@ function throw_error(error: any) {
 }
 
 const updateURL = async (page: number): Promise<void> => {
-  console.log('Moving to page ' + page)
+  _tracer_bullet('Moving to page ' + page)
 
   await router.push({
     name: 'search',
     query: { ...route.query, page: page },
   })
-}
-
-function getCookieByName(name: string) {
-  const match = document.cookie
-    .match(new RegExp("(^| )" + name + "=([^;]+)"));
-  if (match) return match[2];
-  return null;
 }
 
 async function fetchData(start: number) {
@@ -380,8 +296,8 @@ async function fetchData(start: number) {
     control_params.push('expand=' + expand.value)
   }
   const url =
-    api_url + '/' + core.value + '?' + params + '&' + control_params.join('&')
-  console.log("Trying " + url)
+    implementation.api_url + '/' + core.value + '?' + params + '&' + control_params.join('&')
+  _tracer_bullet("Trying " + url)
   const nq = await fetch(url, {
     method: 'get',
     mode: 'cors',
@@ -417,7 +333,7 @@ async function fetchData(start: number) {
   commits.value = nq['response']['docs']
   total.value = nq['response']['numFound']
   const facets_cleaned: any = {}
-  for (const key of desired_facets) {
+  for (const key of implementation.desired_facets) {
     const facet_details = Object.entries(
       nq['facet_counts']['facet_fields'],
     ) as [string, Array<unknown>][]
@@ -440,8 +356,7 @@ async function fetchData(start: number) {
   }
 }
 
-onBeforeMount(async () => {
-  //console.log('Before')
+onMounted(async () => {
   window.scrollTo(0, 0)
   await fetchData(currentPage.value).then(() => {
     is_loading.value = false
@@ -503,7 +418,11 @@ onBeforeMount(async () => {
               <CSpinner />
             </div>
             <div class="darwin-search-results" v-if="is_error['bool']">
-              <p>I'm sorry, I'm unable to complete your request ({{is_error['message']}})</p>
+              <p>
+                I'm sorry, I'm unable to complete your request ({{
+                  is_error['message']
+                }})
+              </p>
               <p>Please try again in a few minutes</p>
             </div>
             <div v-show="!is_loading && !is_error['bool']">
@@ -538,7 +457,7 @@ onBeforeMount(async () => {
                             </div>
                             <div class="subQuery">
                               <div
-                                v-for="(obj, key) in sp"
+                                v-for="obj in sp"
                                 :key="JSON.stringify(obj)"
                               >
                                 <div
@@ -619,7 +538,7 @@ onBeforeMount(async () => {
                                 &nbsp;<input type="submit" value="Go!" />
                               </form>
                             </div>
-                            <div :class="'pages ' + paginated_results">
+                            <div :class="'pages ' + paginate_results">
                               <vue-awesome-paginate
                                 :totalItems="total"
                                 :itemsPerPage="items_per_page"
@@ -631,125 +550,10 @@ onBeforeMount(async () => {
                               />
                             </div>
                           </div>
-                          <table v-else-if="total == 0">
-                            <tbody>
-                              <tr>
-                                <td>
-                                  <p>Sorry, no results...</p>
-                                  <p>Try modifying your search:</p>
-                                  <div class="forms">
-                                    <form method="get" action="/search">
-                                      <table>
-                                        <tbody>
-                                          <tr>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                name="keyword"
-                                                size="40"
-                                                :value="keyword_values"
-                                              />
-                                              <input
-                                                type="hidden"
-                                                name="page"
-                                                value="1"
-                                              />
-                                              &nbsp;<input
-                                                type="submit"
-                                                value="Search"
-                                              />
-                                              <input
-                                                type="reset"
-                                                onclick="location.href='/search'"
-                                                value="Clear"
-                                              />
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <td>
-                                              <table class="sampleTable">
-                                                <tbody>
-                                                  <tr>
-                                                    <td colspan="2">
-                                                      <b>NB:</b> Searches are
-                                                      not case sensitive and
-                                                      will find both singular
-                                                      and plural of any term
-                                                    </td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td colspan="2">
-                                                      Examples:
-                                                    </td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td class="sampleQuery">
-                                                      flowering
-                                                    </td>
-                                                    <td class="sampleDescrip">
-                                                      find the word ‘flowering’
-                                                    </td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td class="sampleQuery">
-                                                      flowering plant
-                                                    </td>
-                                                    <td class="sampleDescrip">
-                                                      find documents containing
-                                                      both ‘flowering’ and
-                                                      ‘plant(s)’
-                                                    </td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td class="sampleQuery">
-                                                      "flowering plant"
-                                                    </td>
-                                                    <td class="sampleDescrip">
-                                                      find the phrase ‘flowering
-                                                      plant(s)’
-                                                    </td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td class="sampleQuery">
-                                                      pl*t
-                                                    </td>
-                                                    <td class="sampleDescrip">
-                                                      find any word beginning
-                                                      ‘pl’ followed by zero or
-                                                      more characters, and
-                                                      ending ‘t’
-                                                    </td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td class="sampleQuery">
-                                                      *plant
-                                                    </td>
-                                                    <td class="sampleDescrip">
-                                                      find any word ending with
-                                                      ‘plant(s)’
-                                                    </td>
-                                                  </tr>
-                                                  <tr>
-                                                    <td class="sampleQuery">
-                                                      plant*
-                                                    </td>
-                                                    <td class="sampleDescrip">
-                                                      find any word beginning
-                                                      ‘plant’
-                                                    </td>
-                                                  </tr>
-                                                </tbody>
-                                              </table>
-                                            </td>
-                                          </tr>
-                                        </tbody>
-                                      </table>
-                                    </form>
-                                  </div>
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
+                          <NoResults
+                            :keyword="keyword_values"
+                            v-else-if="total === 0"
+                          />
                         </div>
                         <ResultItem
                           v-for="(item, index) in commits"
@@ -758,7 +562,8 @@ onBeforeMount(async () => {
                           :index="index"
                           :key="JSON.stringify(item)"
                         />
-                        <div :class="'pages ' + paginated_results">
+                        <div
+                          :class="'pages ' + paginate_results">
                           <vue-awesome-paginate
                             :totalItems="total"
                             :itemsPerPage="items_per_page"
@@ -789,13 +594,12 @@ onBeforeMount(async () => {
               <div class="cudl-results sidebar-results-list">
                 <div class="facet">
                   <facet-block
-                    v-for="facet in desired_facets"
+                    v-for="facet in implementation.desired_facets"
                     :desired_facet="facet"
                     :params="params"
                     v-bind:facets="facets"
-                    v-bind:facet_key="facet_key"
+                    v-bind:facet_key="implementation.facet_key"
                     v-bind:query_params="query_params"
-                    v-bind:router="router"
                     v-bind:q_params_tidied="q_params_tidied"
                     :key="facets_key + '::' + facet"
                   />

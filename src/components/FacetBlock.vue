@@ -10,12 +10,11 @@ const props = defineProps({
   facet_key: { type: Object, required: true },
   query_params: { type: Object, required: true },
   q_params_tidied: { type: Object, required: true },
-  router: { type: Object, required: true },
 })
 
 const fullPath = ref(route.fullPath)
 const expandedName = ref('expand' in route.query ? route.query['expand'] : null)
-const name = ref(
+const name = ref<string>(
   props.facet_key[props.desired_facet].name.replace(/(^"|"$)/g, ''),
 )
 
@@ -23,7 +22,7 @@ const target_facets = computed(() => {
   return props.facets[props.desired_facet]
 })
 
-const has_entries = computed(() => {
+const has_entries = computed<boolean>(() => {
   return (
     props.desired_facet in props.facets &&
     props.facets[props.desired_facet].length > 0
@@ -37,10 +36,14 @@ const subfacets = computed(() => {
   }
 })
 
-const is_expandible = computed(() => {
-  return ['author', 'addressee', 'correspondent', 'repository', 'volume'].includes(
-    name.value.toLowerCase(),
-  )
+const is_expandible = computed<boolean>(() => {
+  return [
+    'author',
+    'addressee',
+    'correspondent',
+    'repository',
+    'volume',
+  ].includes(name.value.toLowerCase())
 })
 
 const is_expanded = computed(() => {
@@ -82,7 +85,6 @@ const expand_link = computed(() => {
             :query_params="query_params"
             :subfacets="subfacets"
             v-bind:is_subgroup="false"
-            v-bind:router="router"
             v-bind:q_params_tidied="props.q_params_tidied"
             :key="JSON.stringify(facet) + fullPath"
           />
