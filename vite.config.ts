@@ -28,7 +28,7 @@ export default defineConfig({
       },
       //external: ['/config/settings.ts'],
       plugins: [
-        del({ targets: ["dist/sites*/**", "dist/modules*/**", "dist/misc*/**", "dist/favicon.ico"], hook: "generateBundle" })
+        del({ targets: ["dist/sites*/**", "dist/modules*/**", "dist/misc*/**", "dist/favicon.ico"], hook: "writeBundle" })
       ]
     }
   }

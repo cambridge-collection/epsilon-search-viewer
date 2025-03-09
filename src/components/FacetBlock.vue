@@ -38,7 +38,7 @@ const subfacets = computed(() => {
 })
 
 const is_expandible = computed(() => {
-  return ['author', 'addressee', 'correspondent'].includes(
+  return ['author', 'addressee', 'correspondent', 'repository', 'volume'].includes(
     name.value.toLowerCase(),
   )
 })

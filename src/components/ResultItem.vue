@@ -74,6 +74,10 @@ const show_snippets = ref(false)
       </div>
       <table>
         <tbody v-if="item['facet-document-type'] == 'letter'">
+        <tr>
+          <td class="col2"><b>Filename:&nbsp;&nbsp;</b></td>
+          <td class="col3">{{ item['filename'] }}</td>
+        </tr>
           <tr>
             <td class="col2"><b>Author:&nbsp;&nbsp;</b></td>
             <td class="col3">
@@ -98,6 +102,28 @@ const show_snippets = ref(false)
             <td class="col2"><b>Letter no:&nbsp;&nbsp;</b></td>
             <td class="col3">{{ item['document-id'] }}</td>
           </tr>
+          <tr>
+            <td class="col2"><b>Log:&nbsp;&nbsp;</b></td>
+            <td class="col3">{{ item['lognum'] }}</td>
+          </tr>
+          <tr>
+            <td class="col2"><b>Document Online:&nbsp;&nbsp;</b></td>
+            <td class="col3">{{ item['facet-document-online'] }}</td>
+          </tr>
+        </tbody>
+        <tbody v-if="['people','bibliography'].includes(item['facet-document-type'])">
+        <tr>
+          <td class="col2"><b>Filename:&nbsp;&nbsp;</b></td>
+          <td class="col3">{{ item['filename'] }}</td>
+        </tr>
+        <tr>
+          <td class="col2"><b>ID:&nbsp;&nbsp;</b></td>
+          <td class="col3">{{ item['document-id'] }}</td>
+        </tr>
+        <tr>
+          <td class="col2"><b>Status:&nbsp;&nbsp;</b></td>
+          <td class="col3">{{ item['facet-status'] }}</td>
+        </tr>
         </tbody>
       </table>
     </div>

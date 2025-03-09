@@ -27,6 +27,18 @@ const desired_facets: string[] = [
   'f1-addressee',
   'f1-correspondent',
   'f1-year',
+  'f1-repository',
+  'f1-volume',
+  'f1-entry-cancelled',
+  'f1-document-online',
+  'f1-letter-published',
+  'f1-translation-published',
+  'f1-footnotes-published',
+  'f1-has-tnotes',
+  'f1-has-cdnotes',
+  'f1-has-annotations',
+  'f1-linked-to-cudl-images',
+  'f1-darwin-letter',
   's-commentary',
   's-key-stage',
   's-ages',
@@ -34,12 +46,25 @@ const desired_facets: string[] = [
 ]
 
 // Enter facet details here.
+
 const facet_key = {
   'f1-document-type': { name: 'Document type', count: 5 },
   'f1-author': { name: 'Author', count: 5 },
   'f1-addressee': { name: 'Addressee', count: 5 },
   'f1-correspondent': { name: 'Correspondent', count: 5 },
   'f1-year': { name: 'Date', count: 999 },
+  'f1-repository': { name: 'Repository', count: 5 },
+  'f1-volume': { name: 'Volume', count: 5 },
+  'f1-entry-cancelled': { name: 'Entry cancelled', count: 5 },
+  'f1-document-online': { name: 'Document online', count: 5 },
+  'f1-letter-published': { name: 'Letter published', count: 5 },
+  'f1-translation-published': { name: 'Translation published', count: 5 },
+  'f1-footnotes-published': { name: 'Footnotes published', count: 5 },
+  'f1-has-tnotes': { name: 'Has tnotes', count: 5 },
+  'f1-has-cdnotes': { name: 'Has cdnotes', count: 5 },
+  'f1-has-annotations': { name: 'Has annotations', count: 5 },
+  'f1-linked-to-cudl-images': { name: 'Linked to CDL images', count: 5},
+  'f1-darwin-letter': { name: 'Darwin letter', count: 5},
   's-commentary': { name: 'Commentary', count: 5 },
   's-key-stage': { name: 'Key Stage', count: 5 },
   's-ages': { name: 'Learning Band', count: 5 },
@@ -333,6 +358,13 @@ const updateURL = async (page: number): Promise<void> => {
     name: 'search',
     query: { ...route.query, page: page },
   })
+}
+
+function getCookieByName(name: string) {
+  const match = document.cookie
+    .match(new RegExp("(^| )" + name + "=([^;]+)"));
+  if (match) return match[2];
+  return null;
 }
 
 async function fetchData(start: number) {

@@ -19,17 +19,18 @@ To run the component locally:
 
 1. Install all dependencies using `npm install`
 2. Run `npm run dev`
-3. Go to <https://localhost:5173/search>. This will return the first page of all items.
+3. Go to <http://localhost:5173/search>. This will return the first page of all items.
 4. Enter something into the search field and click search.
 
 ## Building for Deployment
 
 The deployment is currently manual.
 
-1. Set `apiURL` to the appropriate search api for the environment.
-2. Run ` npm run build` at the root level of this repository
-3. The outputs are written to `./dist`.
-4. Upload the outputs into the `./www` directory of the environment's release bucket.
+1. Set `apiURL` to the appropriate search api for the environment in `./public/searchResults.config.json`. **Important:** Be sure to include the `https://` or `http://` (for local deployments)
+2. Install all dependencies using `npm install`
+3. Run ` npm run build` at the root level of this repository
+4. The outputs are written to `./dist`.
+5. Upload the outputs into the `./www` directory of the environment's release bucket.
 
 At present, the `dist` bucket should only contain:
 - `search.html`
@@ -46,3 +47,5 @@ You may occasionally get an error that certain of these superfluous directories/
 ## Notes on implementation
 
 The code is contained within `./src`. The Single Page Application has one route (`/search`) that is dealt with by `./src/views/SearchResults.vue`. `SearchResults.vue` incorporates a number of smaller components, contained in `./src/components/` to create the view.
+
+
