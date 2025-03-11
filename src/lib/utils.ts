@@ -7,26 +7,29 @@ type Facet = {
   subfacet?: Record<string, Facet>; // Optional nested subfacet structure
 };
 
-const _bucket_to_param_name = (facetKey: string, facets: Record<string, Facet> = implementation.facet_key): string => {
-  let result: string = ''
+const _bucket_to_param_name = (
+  facetKey: string,
+  facets: Record<string, Facet> = implementation.facet_key
+): string => {
+  let result: string = '';
+
+  // Check at the current (root) level first.
+  if (facetKey in facets) {
+    result = facets[facetKey].alias ? facets[facetKey].alias : facetKey;
+    return result;
+  }
+
+  // Otherwise, iterate over the facets and search their subfacets.
   for (const key in facets) {
     const facet = facets[key];
-
-    // If the key matches, return alias if available, else return key
-    if (key === facetKey) {
-      result = ('alias' in facet && facet.alias) ? facet.alias : key;
-    } else {
-
-    // If it has subfacets, search recursively
     if (facet.subfacet) {
-      const found = _bucket_to_param_name(facetKey, facet.subfacet);
-      if (found) {
-        return facet.alias ?? key; // Return the alias of the root facet if available
+      result = _bucket_to_param_name(facetKey, facet.subfacet);
+      if (result) {
+        return facets[key].alias ?? key; // Return the top-level alias if found.
       }
     }
   }
-}
-  return result; // Return null if key isn't found anywhere
+  return result;
 };
 
 const _get_subfacet_bucket_name = (facetKey: string, facets: Record<string, Facet> = implementation.facet_key): string | null => {

@@ -5,7 +5,7 @@ import { _params_to_query_structure } from '@/lib/utils'
 
 
 /* Boolean toggle controlling whether _tracer_bullet should output to console log */
-const debug:boolean = true;
+const debug:boolean = false;
 
 /* URL to the search API
    PROD: https://search.darwinproject.ac.uk
@@ -134,7 +134,6 @@ const sort_fields: string[] = ['score', 'author', 'addressee', 'date']
 *  This function standardises all facets to f1-{face-name}.
 */
 const _tidy_facet_paramname = (str: string) => {
-  console.log(str)
   return str.replace(/^f\d+-/, 'f1-');
 }
 

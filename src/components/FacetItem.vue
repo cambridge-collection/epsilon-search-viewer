@@ -30,7 +30,7 @@ const is_selected = computed<boolean>(() => {
   })
 
 const new_facet_params = computed<Record<string, string[]>>(() => {
-  console.log(facet_name.value)
+  //console.log(facet_name.value)
   const param_array: { key: string; value: string }[] = [...props.params]
   param_array.push({key: facet_name.value, value: props.facet.val})
 
@@ -49,7 +49,7 @@ const new_facet_params = computed<Record<string, string[]>>(() => {
 })
 
 const subgroupName = computed<string | null>(() => _get_subfacet_bucket_name(props.param_name) );
-console.log(props.param_name)
+// I believe this can be called without passing the implementation.facet_key. It will be imported by the function
 const facet_name = computed(() =>  _bucket_to_param_name(props.param_name, implementation.facet_key))
 
 const get_subgroup = computed(() => {
