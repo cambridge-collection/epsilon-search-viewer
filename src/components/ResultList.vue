@@ -1,29 +1,34 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue';
-import { useRouter, useRoute, stringifyQuery } from 'vue-router';
+import { useRouter, useRoute, stringifyQuery, type LocationQueryValue } from 'vue-router'
 import ResultItem from '@/components/ResultItem.vue';
 import FacetBlock from '@/components/FacetBlock.vue';
 import CamplPageHeader from '@/components/campl-page-header.vue';
 import NoResults from '@/components/NoResults.vue';
 import 'vue-awesome-paginate/dist/style.css';
 import { CSpinner } from '@coreui/vue';
-import { _get_first_value, _tracer_bullet } from '@/lib/utils';
+import { _is_hierarchical, cancel_link, _get_first_value, _query_param_sort, _params_to_query_structure, _tracer_bullet } from '@/lib/utils';
 import * as implementation from '@/implementationConfig'
+
+// Use this to check for the existence of methods and to run them
+const implementationSafe = implementation as Record<string, unknown>;
 
 const router = useRouter();
 const route = useRoute();
 
-const commits = ref(<any[]>[]);
-const facets = ref(<any>{});
+const commits = ref<Array<{ id: PropertyKey; [key: string]: unknown }>>([]);
+const facets = ref<Record<string, unknown>>({});
 const is_loading = ref<boolean>(true);
-const is_error = ref<any>({ bool: false, message: "" });
+const is_error = ref<{ bool: boolean; message: string }>({ bool: false, message: "" });
 const items_per_page = 20
 const total = ref<number>(0);
 const currentPage = ref<number>(get_current_page());
 
 const core = computed<'pages' | 'items'>(() => _get_first_value(route.query?.tc ?? null) === 'pages' ? 'pages' : 'items' )
-// Update sort
-const sort = computed(() => 'sort' in route.query ? route.query['sort'] : 'score')
+const sort = computed<string>(() => {
+  const sort_val: string = _get_first_value(route.query.sort) ?? 'score'
+  return implementation.sort_fields.includes(sort_val)? sort_val : 'score'
+})
 
 const fullpath_uriencoded = computed<string>(() => encodeURIComponent(route.fullPath) )
 
@@ -33,238 +38,96 @@ function get_current_page(): number {
   return ('page' in route.query && /^\d+$/.test(String(route.query['page']))) ? Number(route.query['page']): 1;
 }
 
-
-// These are the search params
-//const q_params_tidied: any = {}
-const q_params_tidied = computed(() => {
-  const result: any = {}
-  for (const key in route.query) {
-    if (
-      !['start', 'page', 'tab', 'smode', 'text-exclude'].includes(key) &&
-      route.query[key]
-    ) {
-      const new_key = key.replace(/^f\d+-/, 'f1-')
-      result[new_key] = [
-        route.query[key],
-        new_key in result ? result[new_key] : []
-      ].flat(Infinity)
-    }
-  }
-
-  if ('f1-date' in result && result['f1-date']) {
-    const vals: Array<string> = result['f1-date']
-    const final_vals: Array<string> = []
-    vals.forEach(d => {
-      const d_clean: string = d.replace(/(^"|"$)/g, '')
-      if (d.includes('::')) {
-        const tokens = d_clean.split('::')
-        for (let j = 1; j <= tokens.length; j++) {
-          final_vals.push(tokens.slice(0, j).join('::'))
-        }
-      } else {
-        final_vals.push(d_clean)
-      }
-    })
-    result['f1-date'] = [...new Set(final_vals)].sort()
-  }
-  return result
-})
-
-const facets_key = computed(() => {
-  const p = { ...q_params_tidied.value }
-  if ('expand' in route.params) {
-    p['expand'] = route.params['expand']
-  }
-  return p
-})
-
-
-// Remove search-date-type if not date query terms are entered
-if (
-  'search-date-type' in q_params_tidied.value &&
-  !Object.keys(q_params_tidied.value).some(ai =>
-    ['year', 'month', 'day'].includes(ai),
-  )
-) {
-  delete q_params_tidied.value['search-date-type']
-}
-
-const param_strings: string[] = []
-for (const key in q_params_tidied.value) {
-  param_strings.push(key + '=' + encodeURI(q_params_tidied.value[key]))
-}
-
-const params = param_strings.join('&')
-
-const query_key = computed(() => {
-  return JSON.stringify(route.query)
-})
-
-const keyword_values = computed(() => {
-  // Used for :key to determine whether to update the page header
-  // because the keyword appears in the search fields
-  let result = ''
-  if ('keyword' in query_params.value) {
-    result = query_params.value['keyword']['details']
-      .map((e: any) => e.value)
-      .join(' ')
-  }
-  return result
-})
-
-function get_fieldname(p: string) {
-  let name: string
-  if (p == 'q') {
-    name = 'q' //keyword
-  } else {
-    name = p
-  }
-  return name
-}
-
-function get_term_cancel_link(p: string, v: string) {
-  // Need to clear child params if parent is deselected -- ie.
-  // facet down to a specific day - then remove the month
-  // both day and month should not appear in the cancel link
-
-  // Remove object for key 'p' from param list
-  const ps_tidied = Object.fromEntries(
-    Object.entries(q_params_tidied.value).filter(([k, v]) => k !== p),
-  )
-  const current_param = Object.fromEntries(
-    Object.entries(q_params_tidied.value).filter(([k, v]) => k == p),
-  )
-  const qs = []
-  if (Object.keys(ps_tidied).length == 0) {
-    qs.push('keyword=') // Should be browse-all=yes
-  } else {
-    for (const key in ps_tidied) {
-      let vals: any[] = []
-      if (Array.isArray(ps_tidied[key])) {
-        vals = vals.concat(ps_tidied[key])
-      } else {
-        vals.push(ps_tidied[key])
-      }
-      vals.forEach(function (val, index) {
-        if (!(key == p && val == v)) {
-          qs.push(get_fieldname(key) + '=' + val)
-        }
+function add_missing_hierarchical_ancestor_values(key: string, values: string[]): string[] {
+  let result: string[] = [...values];
+  if (_is_hierarchical(key) && values.length) {
+    result= [...new Set(
+      values.flatMap(d => {
+        const d_clean = d.replace(/(^"|"$)/g, '');
+        return d.includes('::')
+          ? d_clean.split('::').map((_, i, arr) => arr.slice(0, i + 1).join('::'))
+          : [d_clean];
       })
-    }
-    // Add any relevant values for the current param that would NOT
-    // be cancelled by current cancellation
-    for (const key of Object.keys(current_param)) {
-      let vals: string[] = []
-      if (Array.isArray(current_param[key])) {
-        vals = vals.concat(current_param[key])
-      } else if (typeof current_param[key] == 'string') {
-        vals.push(current_param[key])
-      }
-
-      for (const val of vals) {
-        if (!remove_vals(p, v, key, val)) {
-          qs.push(get_fieldname(key) + '=' + val)
-        }
-      }
-    }
+    )].sort();
   }
-  return qs.join('&') + '&page=1'
+  return result;
 }
 
-function remove_vals(
-  selected_key: string,
-  selected_value: string,
-  key: string,
-  val: string,
-) {
-  let matches = key == selected_key && val == selected_value
-  if (/^f\d+-date$/.test(selected_key)) {
-    const tidied_val = selected_value.replaceAll(/^"(.+?)"$/g, '$1')
-    const val_pattern = new RegExp('^' + tidied_val + '::')
-    matches =
-      val == selected_value ||
-      val_pattern.test(val.replaceAll(/^"(.+?)"$/g, '$1'))
+const remove_unused_params = (params: Array<{ key: string; value: string }>): Array<{ key: string; value: string }> => {
+  // Define params to remove by default from processed param store
+  const unused_params: string[] = implementation.params_to_remove ?? ['page']
+
+  let newParams = [...params].filter(item => !unused_params.includes(item.key))
+
+  if (typeof implementationSafe._remove_unused_params === 'function') {
+    newParams = implementationSafe._remove_unused_params(newParams)
   }
-  return matches
-}
 
-// Final query param string
-const query_params: any = computed(() => {
-  const p: any = {}
-  for (const key in q_params_tidied.value) {
-    const value = q_params_tidied.value[key]
+  return newParams;
+};
 
-    p[key] = {
-      fieldname: get_fieldname(key),
+const toStringArray = (val: LocationQueryValue | LocationQueryValue[] | null): string[] =>
+  Array.isArray(val) ? val.filter((v): v is string => v !== null) : val !== null ? [val] : [];
+
+const all_params = computed<Array<{ key: string; value: string }>>(() => {
+  let result: { key: string; value: string }[] = []
+  for (const [key, value] of Object.entries(route.query)) {
+    const tidiedKey = (typeof implementationSafe._tidy_facet_paramname === 'function') ? implementationSafe._tidy_facet_paramname?.(key): key;
+    const filteredValues = toStringArray(value).filter(val => val.trim().length > 0);
+    if (filteredValues.length > 0) {
+      add_missing_hierarchical_ancestor_values(tidiedKey, filteredValues).forEach((val: string) => result.push({ key: tidiedKey, value: val }));
     }
-    const details: any[] = []
-    let detail: any = {}
-    let vals: string[] = []
-
-    if (Array.isArray(value)) {
-      vals = vals.concat(value)
-    } else {
-      vals.push(value)
-    }
-    vals.forEach(function (val, index) {
-      detail = {
-        value: val,
-        cancel_link: get_term_cancel_link(key, val),
-      }
-      details.push(detail)
-    })
-    p[key]['details'] = details
   }
-  return p
+  result = remove_unused_params(result)
+
+  result.sort((a, b) => {
+  const keyComparison = _query_param_sort(a.key).localeCompare(_query_param_sort(b.key));
+  if (keyComparison !== 0) return keyComparison;
+  return a.value.localeCompare(b.value);
+});
+
+  return result;
+});
+
+const filtering_params = computed<Array<{ key: string; value: string }>>(() => {
+  const keysToDelete: string[] = implementation.non_filtering_keys ?? ['sort']
+  return all_params.value.filter(item => !keysToDelete.includes(item.key))
 })
 
-const sp = { ...query_params.value }
-delete sp['sort']
-delete sp['tc']
-delete sp['expand']
-
-const expand = computed(() => {
-  return 'expand' in route.query ? route.query['expand'] : null
+const filtering_params_string = computed<string>(() => {
+  return JSON.stringify(filtering_params.value)
 })
 
-const keyword = computed(() => {
-  return 'keyword' in route.query ? route.query['keyword'] : null
-})
-
-const advanced_query_string = computed(() => {
-  const params: any = {}
-  implementation.advanced_params.forEach(p => {
-    if (p in q_params_tidied.value && q_params_tidied.value[p]) {
-      params[p] = q_params_tidied.value[p]
-    }
+const all_params_uri = computed<string>(() =>{
+  const result_array: string[] = []
+  all_params.value.forEach((item: { key: string; value: string }) => {
+    result_array.push(item.key + '=' + encodeURI(String(item.value)))
   })
-
-  return stringifyQuery(params)
+  return result_array.join('&')
 })
 
-function tab_active(name: string): boolean {
-  return (
-    (name == 'this-site' && core.value == 'pages') ||
-    (name == 'cudl-results' && core.value != 'pages')
-  )
-}
 
-function tab_class(name: string) {
-  const active_class = tab_active(name) ? 'active' : null
-  return [name, active_class].join(' ')
-}
+const keyword_string = computed<string>(() => {
+  return all_params.value.filter(item => item.key === 'keyword')
+      .map(item => item.value)
+      .join(' ')
+})
 
-function tab_href(name: string) {
-  let path = tab_active(name) ? '#' : '/search?'
-  const params = { keyword: keyword.value, tc: 'pages', page: 1 }
+const advanced_query_string = computed<string>(() => {
+  const result: Record<string, string[]> = {}
+    all_params.value.filter(item => implementation.advanced_params.includes(item.key)).forEach((item) => {
+      if (result[item.key]) {
+        result[item.key].push(item.value);
+      } else {
+        result[item.key] = [item.value];
+      }
+    });
 
-  if (name != 'this-site') {
-    delete (params as { tc?: string }).tc
-  }
-  if (!tab_active(name)) {
-    path += stringifyQuery(params)
-  }
-  return path
+  return stringifyQuery(result)
+})
+
+function get_facet_header(str: string) {
+  return (str in implementation.facet_key ) ? implementation.facet_key[str]['name']: str
 }
 
 function throw_error(error: string) {
@@ -289,70 +152,67 @@ async function fetchData(start: number) {
   if (start) {
     control_params.push('page=' + start)
   }
-  if (sort.value) {
-    control_params.push('sort=' + sort.value)
-  }
-  if (expand.value) {
-    control_params.push('expand=' + expand.value)
-  }
-  const url =
-    implementation.api_url + '/' + core.value + '?' + params + '&' + control_params.join('&')
+
+  const url = implementation.api_url + '/' + core.value + '?' + all_params_uri.value + '&' + control_params.join('&')
   _tracer_bullet("Trying " + url)
-  const nq = await fetch(url, {
-    method: 'get',
-    mode: 'cors',
-    credentials: 'include'})
-    .then(response => {
-      if (response.ok) {
-        return response.json()
-      }
-      throw new Error('Invalid response')
-    })
-    .then(responseJson => {
-      //console.log(responseJson)
-      for (let i = 0; i < responseJson['response']['docs'].length; i++) {
-        const id = responseJson['response']['docs'][i].id
-        const highlights =
-          id in responseJson['highlighting']
-            ? responseJson['highlighting'][id]
-            : { _text_: [] }
-        responseJson['response']['docs'][i]['highlighting'] = [
-          ...new Set(
-            Object.values(highlights)
-              .flat(1)
-              .filter(n => n),
-          ),
-        ]
-      }
-      return responseJson
-    })
-    .catch(error => {
-      throw_error(error)
-    })
-  if (!is_error.value['bool'] && nq['response']) {
-  commits.value = nq['response']['docs']
-  total.value = nq['response']['numFound']
-  const facets_cleaned: any = {}
-  for (const key of implementation.desired_facets) {
-    const facet_details = Object.entries(
-      nq['facet_counts']['facet_fields'],
-    ) as [string, Array<unknown>][]
-    for (const [facet_name, facet_pairs] of facet_details) {
-      facets.value[facet_name] = { buckets: [] }
-      const buckets = []
-      for (let i = 0; i < facet_pairs.length; i += 2) {
-        const pair = facet_pairs.slice(i, i + 2)
-        buckets.push({ val: pair[0], count: pair[1] })
-      }
-      facets_cleaned[facet_name] = buckets
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      mode: 'cors',
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Invalid response');
     }
-  }
-  facets.value = facets_cleaned
-}
-  else {
-    // The fetch result wasn't json with a 'response' property
-    const msg = (is_error.value['message']) ? is_error.value['message'] : 'Error: Invalid response data'
-    throw_error(msg)
+
+    const data = await response.json();
+    _tracer_bullet(data);
+
+    // Handle highlighting if present
+     if (data?.highlighting) {
+      for (const doc of data.response.docs) {
+        const id = doc.id;
+        // Use below if not checking for existence of highlighting before iterating docs
+        //const highlights = 'highlighting' in data? data.highlighting[id] : { _text_: [] };
+        // Use below instead of above if checking for existence of highlighting before iterating docs
+        const highlights = data.highlighting[id] ?? { _text_: [] };
+        // Does this update data.response? It appears to.
+        doc.highlighting = [
+          ...new Set(Object.values(highlights).flat().filter(Boolean)),
+        ];
+      }
+    }
+
+    if (!is_error.value.bool) {
+      commits.value = data.response.docs;
+      total.value = data.response.numFound;
+
+      // Clean and format facets
+      const facetDetails = Object.entries(data.facet_counts.facet_fields) as [string, (string | number)[]][];
+
+      const facetsCleaned = facetDetails.reduce(
+        (
+          acc: Record<string, { val: string; count: number }[]>,
+          [facetName, facetPairs]: [string, (string | number)[]]
+        ) => {
+          acc[facetName] = [];
+          for (let i = 0; i < facetPairs.length; i += 2) {
+            acc[facetName].push({
+              val: facetPairs[i] as string,
+              count: facetPairs[i + 1] as number,
+            });
+          }
+          return acc;
+        },
+        {} as Record<string, { val: string; count: number }[]>
+      );
+
+      facets.value = facetsCleaned;
+    }
+  } catch (error) {
+    throw_error(error instanceof Error ? error.message : String(error));
   }
 }
 
@@ -365,7 +225,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <campl-page-header :query_params="query_params" :key="keyword_values" />
+  <campl-page-header :keywords="keyword_string" :key="keyword_string" />
   <div class="campl-row campl-content campl-recessed-content dcpNew">
     <div class="campl-wrap clearfix">
       <div
@@ -430,15 +290,15 @@ onMounted(async () => {
                 <ul class="tab-menu">
                   <li>
                     <a
-                      :href="tab_href('cudl-results')"
-                      :class="tab_class('cudl-results')"
+                      :href="implementation.tab_href('cudl-results', core, all_params)"
+                      :class="implementation.tab_class('cudl-results', core)"
                       >Letters, people &amp; references</a
                     >
                   </li>
                   <li>
                     <a
-                      :href="tab_href('this-site')"
-                      :class="tab_class('this-site')"
+                      :href="implementation.tab_href('this-site', core, all_params)"
+                      :class="implementation.tab_class('this-site', core)"
                       >Articles</a
                     >
                   </li>
@@ -456,24 +316,20 @@ onMounted(async () => {
                               <b>Search:</b>
                             </div>
                             <div class="subQuery">
-                              <div
-                                v-for="obj in sp"
-                                :key="JSON.stringify(obj)"
-                              >
                                 <div
                                   class="option"
-                                  v-for="o in obj['details']"
+                                  v-for="o in filtering_params"
                                   :key="JSON.stringify(o)"
                                 >
                                   <span class="subhit">{{ o.value }}</span>
-                                  in <b>{{ obj.fieldname }}</b
-                                  >&nbsp;<a :href="'/search?' + o.cancel_link"
-                                    ><span class="material-icons"
+                                  in <b>{{ get_facet_header(o.key) }}</b
+                                  >&nbsp;
+                                  <router-link :to="{ name: 'search', query: cancel_link(o.key, o.value, all_params) }">
+                                  <span class="material-icons"
                                       >disabled_by_default</span
-                                    ></a
-                                  >
+                                    >
+                                  </router-link>
                                 </div>
-                              </div>
                               <p
                                 class="modify_advanced"
                                 v-if="advanced_query_string.length > 0"
@@ -526,11 +382,11 @@ onMounted(async () => {
                                   </option>
                                 </select>
                                 <input
-                                  v-for="(value, name) in q_params_tidied"
+                                  v-for="obj in filtering_params"
                                   type="hidden"
-                                  :name="String(name)"
-                                  :value="value"
-                                  :key="name + value"
+                                  :name="String(obj.key)"
+                                  :value="obj.value"
+                                  :key="obj.key + obj.value"
                                 />
                                 <input type="hidden" name="page" value="1" />
                                 <input type="hidden" name="tab" value="" />
@@ -546,12 +402,12 @@ onMounted(async () => {
                                 v-model="currentPage"
                                 @click="updateURL"
                                 type="link"
-                                :linkUrl="'/search?page=[page]&' + params"
+                                :linkUrl="'/search?page=[page]&' + all_params_uri"
                               />
                             </div>
                           </div>
                           <NoResults
-                            :keyword="keyword_values"
+                            :keyword="keyword_string"
                             v-else-if="total === 0"
                           />
                         </div>
@@ -571,7 +427,7 @@ onMounted(async () => {
                             v-model="currentPage"
                             @click="updateURL"
                             type="link"
-                            :linkUrl="'/search?page=[page]&' + params"
+                            :linkUrl="'/search?page=[page]&' + all_params_uri"
                           />
                         </div>
                       </div>
@@ -596,12 +452,10 @@ onMounted(async () => {
                   <facet-block
                     v-for="facet in implementation.desired_facets"
                     :desired_facet="facet"
-                    :params="params"
-                    v-bind:facets="facets"
-                    v-bind:facet_key="implementation.facet_key"
-                    v-bind:query_params="query_params"
-                    v-bind:q_params_tidied="q_params_tidied"
-                    :key="facets_key + '::' + facet"
+                    :facets="facets"
+                    :facet_key="implementation.facet_key"
+                    :params="all_params"
+                    :key="filtering_params_string+'::'+facet"
                   />
                 </div>
               </div>

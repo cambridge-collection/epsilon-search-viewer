@@ -1,24 +1,19 @@
 <script lang="ts" setup>
 import FacetItem from '../components/FacetItem.vue'
-import { useRoute } from 'vue-router'
 import { computed, ref } from 'vue'
+import { _params_to_query_structure } from '@/lib/utils';
+import * as implementation from '@/implementationConfig'
 
-const route = useRoute()
 const props = defineProps({
   desired_facet: { type: String, required: true },
   facets: { type: Object, required: true },
   facet_key: { type: Object, required: true },
-  query_params: { type: Object, required: true },
-  q_params_tidied: { type: Object, required: true },
+  params: {type: Array as () => { key: string; value: string }[], required: true},
 })
 
-const fullPath = ref(route.fullPath)
-const expandedName = ref('expand' in route.query ? route.query['expand'] : null)
-const name = ref<string>(
-  props.facet_key[props.desired_facet].name.replace(/(^"|"$)/g, ''),
-)
+const name = computed<string>(() => props.facet_key[props.desired_facet].name.replace(/(^"|"$)/g, ''))
 
-const target_facets = computed(() => {
+const target_facets = computed<{ val: string; count: number; }[]>(() => {
   return props.facets[props.desired_facet]
 })
 
@@ -29,6 +24,8 @@ const has_entries = computed<boolean>(() => {
   )
 })
 
+// Refactor to generic function using implementation.facet (with subfacets)
+// All subfacets for a given key have to be included, regardless of depth
 const subfacets = computed(() => {
   return {
     'f1-year-month': props.facets['f1-year-month'],
@@ -36,39 +33,25 @@ const subfacets = computed(() => {
   }
 })
 
-const is_expandible = computed<boolean>(() => {
-  return [
-    'author',
-    'addressee',
-    'correspondent',
-    'repository',
-    'volume',
-  ].includes(name.value.toLowerCase())
-})
+const is_expandable = computed<boolean>(() => implementation.expandable.includes(name.value.toLowerCase()))
 
-const is_expanded = computed(() => {
-  return (
-    'expand' in route.query && expandedName.value == name.value.toLowerCase()
-  )
-})
+const is_expanded = computed<boolean>(() => props.params.filter(item => item.key == 'expand')[0]?.value.toLowerCase() === name.value.toLowerCase())
 
-const unexpand_link = computed(() => {
-  const { expand, ...unexpand_obj } = route.query
-  return unexpand_obj
-})
+const unexpand_link = computed<Record<string, string[]>>(() => _params_to_query_structure(props.params.filter(item => item.key !== 'expand')))
 
-const expand_link = computed(() => {
-  const expand_obj = {...route.query}
-  expand_obj['expand'] = name.value.toLowerCase()
-  return expand_obj
-})
+const expand_link = computed<Record<string, string[]>>(() => ({ ...unexpand_link.value, expand: [name.value.toLowerCase()] }));
+
+const current_facet_selections = computed<string[]>(() => props.params
+  .filter((item: { key: string; value: string }) => item.key === props.desired_facet)
+  .map((item: { key: string; value: string }) => item.value))
+
 </script>
 
 <template>
   <div class="facet" v-if="has_entries">
     <div class="facetName">
       {{ name }}
-      <div class="facetMore" v-if="is_expandible">
+      <div class="facetMore" v-if="is_expandable">
         <i v-if="target_facets.length >= 5">
           <router-link :to="{ name: 'search', query: unexpand_link}" v-if="is_expanded">less <span>-</span></router-link>
           <router-link :to="{ name: 'search', query: expand_link}" v-else>more <span>+</span></router-link>
@@ -79,14 +62,14 @@ const expand_link = computed(() => {
       <table>
         <tbody>
           <facetItem
-            v-for="facet in target_facets"
+            v-for="facet in facets[desired_facet]"
             :facet="facet"
             :param_name="desired_facet"
-            :query_params="query_params"
+            :params="params"
+            :current_selections="current_facet_selections"
             :subfacets="subfacets"
             v-bind:is_subgroup="false"
-            v-bind:q_params_tidied="props.q_params_tidied"
-            :key="JSON.stringify(facet) + fullPath"
+            :key="JSON.stringify(facet)"
           />
         </tbody>
       </table>

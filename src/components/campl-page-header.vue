@@ -2,17 +2,7 @@
 import { computed } from 'vue'
 
 const props = defineProps({
-  query_params: { type: Object, required: true },
-})
-
-const keyword = computed(() => {
-  let result = null
-  if ('keyword' in props.query_params) {
-    result = props.query_params['keyword']['details']
-      .map((e: Record<string, unknown>) => e.value)
-      .join(' ')
-  }
-  return result
+  keywords: { type: String, required: true },
 })
 
 </script>
@@ -1466,8 +1456,7 @@ const keyword = computed(() => {
               <meta itemprop="url" content="https://www.darwinproject.ac.uk/" />
               <form action="/search" method="get" accept-charset="UTF-8" id="darwin-search-block-form" name="darwin-search-block-form">
                   <div>
-                      <meta itemprop="target" content="/search?q={keyword}" />
-                      <input placeholder="Search over 15000 letters and articles..." type="text" itemprop="query-input" name="keyword" :value="keyword" class="form-text" />
+                      <input placeholder="Search over 15000 letters and articles..." type="text" itemprop="query-input" name="keyword" :value="keywords" class="form-text" />
                       <input type="hidden" value="" name="tab" /> <input type="submit" value="Search" class="form-submit" />
                   </div>
                   <div class="advanced-search"><a href="/advanced-search">advanced search ›</a></div>
