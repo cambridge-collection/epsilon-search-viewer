@@ -1,4 +1,5 @@
 import * as implementation from '@/implementationConfig'
+import { computed } from 'vue'
 
 type Facet = {
   name: string;
@@ -7,32 +8,62 @@ type Facet = {
   subfacet?: Record<string, Facet>; // Optional nested subfacet structure
 };
 
-const _bucket_to_param_name = (
+/*const _bucket_to_param_name2 = (
   facetKey: string,
   facets: Record<string, Facet> = implementation.facet_key
 ): string => {
+ // console.log('Checking '+facetKey)
+  //console.log(facets)
   let result: string = '';
 
-  // Check at the current (root) level first.
+  // Check at the current (root) level.
   if (facetKey in facets) {
     result = facets[facetKey].alias ? facets[facetKey].alias : facetKey;
-    return result;
-  }
-
-  // Otherwise, iterate over the facets and search their subfacets.
-  for (const key in facets) {
-    const facet = facets[key];
-    if (facet.subfacet) {
-      result = _bucket_to_param_name(facetKey, facet.subfacet);
-      if (result) {
-        return facets[key].alias ?? key; // Return the top-level alias if found.
+  } else {
+    for (const key in facets) {
+      const facet = facets[key];
+      if (facet.subfacet) {
+        const subResult = _bucket_to_param_name2(facetKey, facet.subfacet);
+        if (subResult) {
+          result = facets[key].alias ?? key;
+          break; // Stop looping once a match is found.
+        }
       }
     }
   }
   return result;
-};
+};*/
 
-const _get_subfacet_bucket_name = (facetKey: string, facets: Record<string, Facet> = implementation.facet_key): string | null => {
+const _bucket_to_param_name = (facetKey: string): string => {
+  const found = facet_lookup.value.find(item => item.key === facetKey);
+  return found ? found.value : '';
+}
+
+/* Create lookup table to get param name from bucket_name */
+const facet_lookup = computed<Array<{ key: string; value: string }>>((): Array<{ key: string; value: string }> => {
+  const computeFacets = (
+    facets: Record<string, Facet> = implementation.facet_key,
+    topAlias?: string
+  ): Array<{ key: string; value: string }> => {
+    let arr: Array<{ key: string; value: string }> = [];
+    for (const key in facets) {
+      const facet = facets[key];
+      const effectiveValue = topAlias ?? facet.alias ?? key;
+      arr.push({ key, value: effectiveValue });
+      if (facet.subfacet) {
+        const newTopAlias = topAlias ?? facet.alias;
+        arr = arr.concat(computeFacets(facet.subfacet, newTopAlias));
+      }
+    }
+    return arr;
+  };
+
+  return computeFacets();
+});
+
+/* Rewrite this into another lookup table */
+/*const _get_subfacet_bucket_name2 = (facetKey: string, facets: Record<string, Facet> = implementation.facet_key): string | null => {
+  console.log(facetKey)
   if (facetKey in facets) {
     return facets[facetKey].subfacet ? Object.keys(facets[facetKey].subfacet!)[0] : null;
   }
@@ -40,14 +71,39 @@ const _get_subfacet_bucket_name = (facetKey: string, facets: Record<string, Face
   for (const key in facets) {
     const subfacets = facets[key].subfacet;
     if (subfacets) {
-      const found = _get_subfacet_bucket_name(facetKey, subfacets);
+      const found = _get_subfacet_bucket_name2(facetKey, subfacets);
       if (found) return found;
     }
   }
 
   return null;
-}
+}*/
 
+function _get_subfacet_bucket_name(facetKey: string, facets: Record<string, Facet> = implementation.facet_key): string | null {
+  const found = subfacet_lookup.value.find(item => item.key === facetKey);
+  return found ? found.value : null;
+}
+const subfacet_lookup = computed<Array<{ key: string; value: string }>>((): Array<{ key: string; value: string }> => {
+  const lookup: Array<{ key: string; value: string }> = [];
+
+  const processFacets = (facets: Record<string, Facet>) => {
+    for (const key in facets) {
+      const facet = facets[key];
+      if (facet.subfacet) {
+        const subKeys = Object.keys(facet.subfacet);
+        if (subKeys.length > 0) {
+          const immediateSubfacetKey = subKeys[0];
+          lookup.push({ key, value: immediateSubfacetKey });
+        }
+        processFacets(facet.subfacet);
+      }
+    }
+  };
+
+  processFacets(implementation.facet_key);
+  return lookup;
+});
+//console.log(subfacet_lookup.value)
 const _find_facet_hierarchy = (facetKey: string, facets: Record<string, Facet> = implementation.facet_key, path: string[] = []): string[] | null => {
   for (const key in facets) {
     const facet = facets[key];

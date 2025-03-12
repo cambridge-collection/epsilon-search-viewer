@@ -49,8 +49,7 @@ const new_facet_params = computed<Record<string, string[]>>(() => {
 })
 
 const subgroupName = computed<string | null>(() => _get_subfacet_bucket_name(props.param_name) );
-// I believe this can be called without passing the implementation.facet_key. It will be imported by the function
-const facet_name = computed(() =>  _bucket_to_param_name(props.param_name, implementation.facet_key))
+const facet_name = computed(() =>  _bucket_to_param_name(props.param_name))
 
 const get_subgroup = computed(() => {
   const tidied_val = props.facet.val.replaceAll(/^"(.+?)"$/g, '')
