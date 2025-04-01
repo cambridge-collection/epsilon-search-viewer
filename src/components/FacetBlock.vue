@@ -28,8 +28,9 @@ const has_entries = computed<boolean>(() => {
 // All subfacets for a given key have to be included, regardless of depth
 const subfacets = computed(() => {
   return {
-    'f1-year-month': props.facets['f1-year-month'],
-    'f1-year-month-day': props.facets['f1-year-month-day'],
+    'f1-decade-year': props.facets['f1-decade-year'],
+    'f1-decade-year-month': props.facets['f1-decade-year-month'],
+    'f1-decade-year-month-day': props.facets['f1-decade-year-month-day'],
   }
 })
 
@@ -48,19 +49,11 @@ const current_facet_selections = computed<string[]>(() => props.params
 </script>
 
 <template>
-  <div class="facet" v-if="has_entries">
-    <div class="facetName">
+  <div class="facet pb-2 mb-4" v-if="has_entries">
+    <h6 class="facetName bg-info pt-2 pb-2 mb-0 text-center text-white">
       {{ name }}
-      <div class="facetMore" v-if="is_expandable">
-        <i v-if="target_facets.length >= 5">
-          <router-link :to="{ name: 'search', query: unexpand_link}" v-if="is_expanded">less <span>-</span></router-link>
-          <router-link :to="{ name: 'search', query: expand_link}" v-else>more <span>+</span></router-link>
-        </i>
-      </div>
-    </div>
-    <div class="facetGroup">
-      <table>
-        <tbody>
+    </h6>
+    <ul class="facetGroup list-group list-group-root">
           <facetItem
             v-for="facet in facets[desired_facet]"
             :facet="facet"
@@ -71,54 +64,18 @@ const current_facet_selections = computed<string[]>(() => props.params
             v-bind:is_subgroup="false"
             :key="JSON.stringify(facet)"
           />
-        </tbody>
-      </table>
-    </div>
+      <li class="facetLess list-group-item d-flex justify-content-between align-items-center"  v-if="is_expandable && target_facets.length >= 5">
+          <router-link :to="{ name: 'search', query: unexpand_link}" class="badge badge-light badge-pill border mx-auto mt-2 mb-2" v-if="is_expanded" >
+            <i class="fas fa-angle-double-up"></i> FEWER <i class="fas fa-angle-double-up"></i>
+          </router-link>
+          <router-link :to="{ name: 'search', query: expand_link}" class="badge badge-light badge-pill border mx-auto mt-2 mb-2" v-else>
+            <i class="fas fa-angle-double-down"></i> MORE <i class="fas fa-angle-double-down"></i>
+          </router-link>
+      </li>
+    </ul>
   </div>
 </template>
 
 <style scoped>
-.dcpNew .facet .facetName {
-  font-weight: bold;
-  background-color: transparent;
-  color: #111;
-  padding-bottom: 0.5em;
-  overflow: hidden;
-}
 
-.dcpNew .facet table {
-  width: 100%;
-  border-bottom: 2px solid #57831a;
-}
-
-.dcpNew .facet {
-  margin-bottom: 2em;
-}
-
-.dcpNew .facet tbody {
-  border-top: none !important;
-}
-
-.dcpNew .facet .facetSubGroup table {
-  width: 90%;
-  margin-left: 10%;
-  border-top: none;
-}
-
-.facetMore {
-  float: right;
-}
-
-.facetMore a,
-.facetLess a {
-  font-style: normal;
-  font-weight: bold;
-  font-size: 0.8em;
-  color: #666;
-  text-transform: uppercase;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 4px 4px 4px 4px;
-  padding: 2px 8px;
-}
 </style>

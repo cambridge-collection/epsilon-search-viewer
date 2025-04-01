@@ -226,264 +226,174 @@ onMounted(async () => {
 
 <template>
   <campl-page-header :keywords="keyword_string" :key="keyword_string" />
-  <div class="campl-row campl-content campl-recessed-content dcpNew">
-    <div class="campl-wrap clearfix">
-      <div
-        class="campl-column9 campl-main-content"
-        id="page-content"
-        style="min-height: 100vh"
-      >
-        <div class="region region-content">
-          <div
-            id="block-darwin-sharing-darwin-sharing-add"
-            class="block block-darwin-sharing campl-content-container"
-          >
-            <div>
-              <div class="social-media-share">
-                <a
-                  class="icon-sm darwin-facebook"
-                  :href="
-                    'https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.darwinproject.ac.uk' +
-                    fullpath_uriencoded
-                  "
-                  title="Share on Facebook"
-                  target="_blank"
-                  ><i class="fab fa-facebook-f" aria-hidden="true"></i
-                ></a>
-                <a
-                  class="icon-sm darwin-twitter"
-                  :href="
-                    'https://twitter.com/intent/tweet?text=Search+results&amp;url=https%3A%2F%2Fwww.darwinproject.ac.uk' +
-                    fullpath_uriencoded
-                  "
-                  title="Share on Twitter"
-                  target="_blank"
-                  ><i class="fab fa-twitter" aria-hidden="true"></i
-                ></a>
-                <a
-                  class="icon-sm darwin-email"
-                  :href="
-                    'mailto:?&amp;subject=Search results&amp;body=https%3A%2F%2Fwww.darwinproject.ac.uk' +
-                    fullpath_uriencoded
-                  "
-                  title="Share by email"
-                  ><i class="fas fa-envelope" aria-hidden="true"></i
-                ></a>
-              </div>
-              <!-- end social media sharing -->
-            </div>
-          </div>
-          <div id="block-system-main" class="block block-system">
-            <div class="darwin-search-results" v-show="is_loading">
+  <div class="resultsHeader container-fluid">
+
+    <div class="row darwin-search-results" v-show="is_loading">
               <CSpinner />
-            </div>
-            <div class="darwin-search-results" v-if="is_error['bool']">
-              <p>
-                I'm sorry, I'm unable to complete your request ({{
-                  is_error['message']
-                }})
-              </p>
-              <p>Please try again in a few minutes</p>
-            </div>
-            <div v-show="!is_loading && !is_error['bool']">
-              <div class="campl-content-container" :key="route.fullPath">
-                <ul class="tab-menu">
-                  <li>
-                    <a
-                      :href="implementation.tab_href('cudl-results', core, all_params)"
-                      :class="implementation.tab_class('cudl-results', core)"
-                      >Letters, people &amp; references</a
-                    >
-                  </li>
-                  <li>
-                    <a
-                      :href="implementation.tab_href('this-site', core, all_params)"
-                      :class="implementation.tab_class('this-site', core)"
-                      >Articles</a
-                    >
-                  </li>
-                </ul>
-                <div class="darwin-search-results-container">
-                  <div class="search-results-page">
-                    <div class="darwin-search-results">
-                      <div
-                        class="cudl-results search-results-list"
-                        style="display: block"
-                      >
-                        <div class="resultsHeader">
-                          <div class="query">
-                            <div class="label">
-                              <b>Search:</b>
-                            </div>
-                            <div class="subQuery">
-                                <div
-                                  class="option"
-                                  v-for="o in filtering_params"
-                                  :key="JSON.stringify(o)"
-                                >
+    </div>
+    <div class="row darwin-search-results" v-if="is_error['bool']">
+      <p>
+        I'm sorry, I'm unable to complete your request ({{
+          is_error['message']
+        }})
+      </p>
+      <p>Please try again in a few minutes</p>
+    </div>
+    <div v-show="!is_loading && !is_error['bool']" :key="route.fullPath">
+      <div class="row">
+        <div class="col">
+          <div class="row">
+            <span class="col-auto label"><b>Search:</b></span>
+            <span class="col-6 pl-0">
+              <span
+                  class="option"
+                  v-for="o in filtering_params"
+                  :key="JSON.stringify(o)">
                                   <span class="subhit">{{ o.value }}</span>
-                                  in <b>{{ get_facet_header(o.key) }}</b
-                                  >&nbsp;
-                                  <router-link :to="{ name: 'search', query: cancel_link(o.key, o.value, all_params) }">
-                                  <span class="material-icons"
-                                      >disabled_by_default</span
-                                    >
+                                  in <b>{{ get_facet_header(o.key) }}</b>&nbsp;
+
+                  <router-link class="text-danger" :to="{ name: 'search', query: cancel_link(o.key, o.value, all_params) }">
+                                  <i class="fas fa-window-close" aria-hidden="true"></i>
                                   </router-link>
-                                </div>
-                              <p
-                                class="modify_advanced"
-                                v-if="advanced_query_string.length > 0"
-                              >
-                                <a
-                                  :href="
-                                    '/advanced-search?' + advanced_query_string
-                                  "
-                                  >Modify search</a
-                                >
-                              </p>
-                            </div>
-                          </div>
-                          <div class="num_items" v-show="total >= 1">
-                            <span id="itemCount">{{ total }}</span> Item{{
-                              total != 1 ? 's' : ''
-                            }}
-                          </div>
-                          <div v-if="total >= 1">
-                            <div class="sort_by" v-if="core != 'pages'">
-                              <form method="get" action="/search">
-                                <b>Sorted by:&nbsp;</b>
-                                <select size="1" name="sort">
-                                  {{
-                                    sort
-                                  }}
-                                  <option
-                                    value="score"
-                                    :selected="sort == 'score'"
-                                  >
-                                    relevance
-                                  </option>
-                                  <option
-                                    value="author"
-                                    :selected="sort == 'author'"
-                                  >
-                                    author
-                                  </option>
-                                  <option
-                                    value="addressee"
-                                    :selected="sort == 'addressee'"
-                                  >
-                                    addressee
-                                  </option>
-                                  <option
-                                    value="date"
-                                    :selected="sort == 'date'"
-                                  >
-                                    date
-                                  </option>
-                                </select>
-                                <input
-                                  v-for="obj in filtering_params"
-                                  type="hidden"
-                                  :name="String(obj.key)"
-                                  :value="obj.value"
-                                  :key="obj.key + obj.value"
-                                />
-                                <input type="hidden" name="page" value="1" />
-                                <input type="hidden" name="tab" value="" />
-                                <input type="hidden" name="tc" :value="core" />
-                                &nbsp;<input type="submit" value="Go!" />
-                              </form>
-                            </div>
-                            <div :class="'pages ' + paginate_results">
-                              <vue-awesome-paginate
-                                :totalItems="total"
-                                :itemsPerPage="items_per_page"
-                                :maxPagesShown="5"
-                                v-model="currentPage"
-                                @click="updateURL"
-                                type="link"
-                                :linkUrl="'/search?page=[page]&' + all_params_uri"
-                              />
-                            </div>
-                          </div>
-                          <NoResults
-                            :keyword="keyword_string"
-                            v-else-if="total === 0"
-                          />
-                        </div>
-                        <ResultItem
+                  <br />
+              </span>
+            </span>
+          </div>
+        </div>
+        <div class="col-auto text-right">
+
+              <form method="get" action="/search" v-show="total >= 1">
+                <div class="form-row d-inline-flex">
+                  <div class="col-auto">
+                    <b>Sorted by:</b>
+                  </div>
+                  <div class="col-auto">
+                    <select class="form-control form-control-sm" size="1" name="sort">
+                  {{
+                    sort
+                  }}
+                  <option
+                    value="score"
+                    :selected="sort == 'score'"
+                  >
+                    relevance
+                  </option>
+                  <option
+                    value="author"
+                    :selected="sort == 'author'"
+                  >
+                    author
+                  </option>
+                  <option
+                    value="addressee"
+                    :selected="sort == 'addressee'"
+                  >
+                    addressee
+                  </option>
+                  <option
+                    value="date"
+                    :selected="sort == 'date'"
+                  >
+                    date
+                  </option>
+                </select>
+                  </div>
+                <input
+                  v-for="obj in filtering_params"
+                  type="hidden"
+                  :name="String(obj.key)"
+                  :value="obj.value"
+                  :key="obj.key + obj.value"
+                />
+                <input type="hidden" name="page" value="1" />
+                &nbsp;<input class="btn btn-info btn-sm" type="submit" value="Go!" />
+
+            </div>
+              </form>
+            <!--<div class="mt-2 small">
+              <a
+                href="https://epsilon.ac.uk/search?keyword=water&amp;f1-correspondent=Faraday%2C%20Michael&amp;f1-document-type=letter&amp;f1-date=1860-1869%3A%3A1861&amp;smode=embedded-modify"
+              >Modify Search</a>
+            </div>-->
+
+        </div>
+      </div>
+      <div v-if="total >= 1">
+      <div class="row" v-show="total >= 1">
+        <div class="col num_items">
+          <span id="itemCount">{{ total }}</span> Item{{
+            total != 1 ? 's' : ''
+          }} <!--<p>Showing <b>1</b>–<b>11</b> of <b>11</b> items</p>-->
+          <div class="num_items">
+
+          </div>
+        </div>
+      </div>
+
+      <div :class="'row justify-content-md-center pagination-row ' + paginate_results">
+        <vue-awesome-paginate
+          :totalItems="total"
+          :itemsPerPage="items_per_page"
+          :maxPagesShown="5"
+          v-model="currentPage"
+          @click="updateURL"
+          type="link"
+          :linkUrl="'/search?page=[page]&' + all_params_uri"
+          paginationContainerClass="pagination justify-content-center"
+          paginateButtonsClass="page-link"
+        />
+      </div>
+<div class="row mt-3 mr-2">
+    <div class="col order-2">
+      <ResultItem
                           v-for="(item, index) in commits"
                           :item="item"
                           :currentPage="currentPage"
                           :index="index"
                           :key="JSON.stringify(item)"
-                        />
-                        <div
-                          :class="'pages ' + paginate_results">
-                          <vue-awesome-paginate
-                            :totalItems="total"
-                            :itemsPerPage="items_per_page"
-                            :maxPagesShown="5"
-                            v-model="currentPage"
-                            @click="updateURL"
-                            type="link"
-                            :linkUrl="'/search?page=[page]&' + all_params_uri"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- facets -->
+    />
+    </div>
+  <div class="col-md-4 order-2 order-md-1 col-12 mt-3 mt-md-0">
 
-      <div class="campl-column3 campl-secondary-content" id="page-secondary">
-        <div class="region-sidebar">
-          <div class="srch-sidebar"></div>
-          <div class="view-my-sidebar">
-            <div class="field-content">
-              <h3>Refine your search</h3>
-              <div class="cudl-results sidebar-results-list">
-                <div class="facet">
-                  <facet-block
-                    v-for="facet in implementation.desired_facets"
-                    :desired_facet="facet"
-                    :facets="facets"
-                    :facet_key="implementation.facet_key"
-                    :params="all_params"
-                    :key="filtering_params_string+'::'+facet"
-                  />
-                </div>
-              </div>
-            </div>
+          <div class="facet">
+
+              <facet-block
+                v-for="facet in implementation.desired_facets"
+                :desired_facet="facet"
+                :facets="facets"
+                :facet_key="implementation.facet_key"
+                :params="all_params"
+                :key="filtering_params_string+'::'+facet"
+              />
+
           </div>
         </div>
       </div>
     </div>
+      <NoResults
+        :keyword="keyword_string"
+        v-else-if="total === 0"
+      />
+  </div>
+</div>
+  <div :class="'row justify-content-md-center pagination-row ' + paginate_results">
+    <vue-awesome-paginate
+      :totalItems="total"
+      :itemsPerPage="items_per_page"
+      :maxPagesShown="5"
+      v-model="currentPage"
+      @click="updateURL"
+      type="link"
+      :linkUrl="'/search?page=[page]&' + all_params_uri"
+      paginationContainerClass="pagination justify-content-center"
+      paginateButtonsClass="page-link"
+    />
   </div>
 </template>
 
 <style>
 #app {
   min-height: 100vh;
-}
-
-.social-media-share a {
-  color: white;
-  display: inline-block;
-}
-
-.social-media-share a svg {
-  color: white;
-  vertical-align: text-top;
-}
-
-.dcpNew .bibliography .item-title {
-  font-style: inherit;
 }
 
 .dcpNew em.match {
@@ -497,24 +407,16 @@ onMounted(async () => {
   padding-bottom: 0.5em;
 }
 
-/*.dcpNew .snippets {
-  max-height: 6em;
-}*/
 
-.dcpNew .search-results-page .search-result-item .main-icon {
-  line-height: 1.75;
+
+a.page-link.active-page {
+  z-index: 3;
+  color: #fff;
+  border-color: #0a498b !important;
+  background-color: #0a498b !important;
 }
-
-.dcpNew span.doubleUnderline,
-.dcpNew div.doubleUnderline {
-  font-weight: normal;
-  text-decoration-line: underline;
-  text-decoration-style: double;
-}
-
-.dcpNew .pagination-container {
-  display: flex;
-  column-gap: 10px;
+a.page-link.active-page:hover {
+  background-color: #07305b !important;
 }
 
 .dcpNew ul#componentContainer .paginate-buttons {
@@ -551,25 +453,7 @@ onMounted(async () => {
   border-color: rgb(200, 200, 200);
 }
 
-.dcpNew .subQuery a {
-  display: inline-block;
-}
 
-.dcpNew .subQuery a .material-icons {
-  display: inline-block;
-  vertical-align: bottom;
-  font-size: 1rem;
-  color: rgb(240, 0, 0);
-}
-
-.dcpNew .resultsHeader .query {
-  margin-bottom: 1.5em;
-}
-
-.dcpNew .campl-column3.campl-secondary-content {
-  display: block;
-  position: relative !important;
-}
 
 #page-content .modify_advanced a,
 #page-content .modify_advanced a:visited {

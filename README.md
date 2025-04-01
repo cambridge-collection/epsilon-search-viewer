@@ -11,9 +11,7 @@ A Single File Component for [Vue.JS (v3)](https://vuejs.org/) for displaying sea
 
 Set the `apiURL` in `./public/searchResults.config.json` to the desired non-protected search API.
 
-If testing on locally indexed data, run [darwin-solr](https://github.com/cambridge-collection/darwin-solr) and [darwin-search](https://github.com/cambridge-collection/darwin-search) in docker on your local machine and set `apiURL` to `http://localhost`.
-
-If testing against the live data, set `apiURL` to `https://search.darwinproject.ac.uk/`.
+If testing on locally indexed data, run [epsilon-solr](https://github.com/cambridge-collection/darwin-solr) and [epsilon-search](https://github.com/cambridge-collection/darwin-search) in docker on your local machine and set `apiURL` to `http://localhost`.
 
 To run the component locally:
 

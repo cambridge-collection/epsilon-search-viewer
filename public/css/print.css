@@ -1,0 +1,15 @@
+@charset "UTF-8";
+@page  
+{ 
+    size: auto;   /* auto is the initial value */ 
+
+    /* this affects the margin in the printer settings */ 
+    margin: 1in;  
+} 
+html {margin:0; padding:0; width:auto; font-size:12pt; line-height:1.5}
+html, body {
+min-height: 100%;
+width:auto;
+position: relative;
+}
+div.header,div.resultsHeader {display:none !important}

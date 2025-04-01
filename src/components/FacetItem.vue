@@ -76,46 +76,44 @@ const name = computed(() => {
 </script>
 
 <template>
-  <tr>
-    <td class="col2">
-      <span v-if="is_selected">{{ name }}</span>
-      <router-link :to="{ name: 'search', query: new_facet_params }" v-else>
-        {{ name }}
-      </router-link>
-    </td>
-    <td class="col3">
-      <router-link
-        :to="{ name: 'search', query: cancel_link(facet_name, facet.val, params) }"
-        v-if="is_selected"
-      >
-        <span class="material-icons">disabled_by_default</span>
-      </router-link>
-      <span v-else>({{ props.facet.count }})</span>
-    </td>
-  </tr>
-  <tr v-if="is_selected && subgroupName">
-    <td colspan="2">
-      <div
-        class="facetSubGroup"
-        v-if="is_selected && subgroupName"
-      >
-        <table>
-          <tbody>
-            <facetItem
-              v-for="sub in get_subgroup"
-              :facet="sub"
-              :param_name="subgroupName"
-              :params="params"
-              :current_selections="current_subfacet_selections"
-              :subfacets="subfacets"
-              :is_subgroup="true"
-              :key="JSON.stringify(sub)"
-            />
-          </tbody>
-        </table>
-      </div>
-    </td>
-  </tr>
+  <li class="list-group-item facet-item">
+    <router-link
+      :to="{ name: 'search', query: cancel_link(facet_name, facet.val, params) }" class="d-flex justify-content-between align-items-center"
+      v-if="is_selected && subgroupName"
+    >
+      <span class="col1 text-danger"><i class="fa fa-minus-square" aria-hidden="true"></i></span>
+      <span class="col collapse2">{{ name }}</span>
+      <span class="col text-right"></span>
+    </router-link>
+
+    <router-link
+      :to="{ name: 'search', query: cancel_link(facet_name, facet.val, params) }" class="d-flex justify-content-between align-items-center"
+      v-if="is_selected && !subgroupName"
+    >
+      <span class="col"><i>{{ name }}</i></span>
+      <span class="badge text-danger"><i class="fas fa-window-close" aria-hidden="true"></i></span>
+    </router-link>
+    <router-link :to="{ name: 'search', query: new_facet_params }" class="d-flex justify-content-between align-items-center" v-else>
+      <span class="col">{{ name }}</span>
+      <span class="badge badge-info badge-pill">({{ props.facet.count }})</span>
+    </router-link>
+  </li>
+
+    <li class="list-group-item child-group" v-if="is_selected && subgroupName">
+      <ul class="facetSubGroup list-group">
+        <facetItem
+          v-for="sub in get_subgroup"
+          :facet="sub"
+          :param_name="subgroupName"
+          :params="params"
+          :current_selections="current_subfacet_selections"
+          :subfacets="subfacets"
+          :is_subgroup="true"
+          :key="JSON.stringify(sub)"
+        />
+        </ul>
+    </li>
+
 </template>
 
 <style scoped>

@@ -11,142 +11,77 @@ const show_snippets = ref(false)
 </script>
 
 <template>
-  <div
-    :id="'main_' + index"
-    :class="
-      item['facet-document-type'] + ' docHit search-result-item has-summary'
-    "
-  >
-    <div v-if="item['facet-document-type'] == 'site'">
-      <div v-if="item['og_image.content']" class="this-site key-image">
-        <img
-          class="campl-scale-with-grid"
-          :src="item['og_image.content']"
-          :alt="item['og_image_alt.content']"
-        />
-      </div>
-      <div
-        :class="'this-site-result-wrap ' + (item['og_image.content'] != null)"
-      >
-        <h2 class="item-title">
-          <a :href="item.path">{{ item.title }}</a>
-        </h2>
-        <div class="summary">
-          <p v-html="item['content.summary']"></p>
+  <div :id="'main_' + index" :class="item['facet-document-type'] + ' docHit border mb-4 ml-2 row'">
+    <div class="ribbon released" v-if="item['facet-document-type'] == 'letter' && item['facet-transcription-available'] =='Yes'"><span>Text Online</span></div>
+    <div class="col-9">
+      <div class="row">
+        <div class="col docTitle">
+          <h4 class="item-title">
+            <a :href="item.path">
+              <span v-if="item['facet-document-type'] == 'site'">
+                {{ item.title }}
+              </span>
+              <span v-else-if="item['facet-document-type'] == 'people'">
+                {{ item['display-name'].join('; ') }}
+              </span>
+              <span v-else>{{ item['document-id'] }}</span></a>
+          </h4>
         </div>
       </div>
-    </div>
-    <div v-else>
-      <h2 class="item-title">
-        <span
-          v-if="item['facet-document-type'] == 'bibliography'"
-          v-html="item['content_bibl-citation']"
-        />
-        <a :href="item.path" v-else>{{ item.title }}</a>
-      </h2>
-      <div class="main-icon" v-if="item['facet-document-type'] == 'letter'">
-        <i class="material-icons">mail</i><span>Letter</span>
-      </div>
-      <div
-        class="main-icon"
-        v-else-if="item['facet-document-type'] == 'people'"
-      >
-        <i class="material-icons">person</i><span>Person</span>
-      </div>
-      <div
-        class="main-icon"
-        v-else-if="item['facet-document-type'] == 'bibliography'"
-      >
-        <i class="material-icons">library_books</i><span>Reference</span>
-      </div>
-      <div class="clear" v-if="item['facet-document-type'] == 'letter'"></div>
-      <div class="floatLeft" v-if="item['facet-document-type'] == 'letter'">
-        <div class="thumbnail" v-if="item['preview-tile']">
-          <a :href="item.path">
-            <img alt="thumbnail" :src="item['preview-tile']"
-          /></a>
+      <div v-if="item['facet-document-type'] == 'letter'">
+        <div class="row">
+          <div class="col-3 text-right"><b>From:</b></div><div class="col">{{ item['search-author'].join('; ') }}</div>
         </div>
-        <div
-          class="summary"
-          v-html="item['content_summary']"
-          v-if="item['content_summary']"
-        />
+        <div class="row">
+          <div class="col-3 text-right"><b>To:</b></div><div class="col">{{ item['search-addressee'].join('; ') }}</div>
+        </div>
+        <div class="row">
+          <div class="col-3 text-right"><b>Date:</b></div><div class="col">{{ item.displayDate }}</div>
+        </div>
+        <div class="row">
+          <div class="col-3 text-right"><b>Source of text:</b></div><div class="col">{{ item['search-classmark'] }}</div>
+        </div>
+
       </div>
-      <table>
-        <tbody v-if="item['facet-document-type'] == 'letter'">
-        <tr>
-          <td class="col2"><b>Filename:&nbsp;&nbsp;</b></td>
-          <td class="col3">{{ item['filename'] }}</td>
-        </tr>
-          <tr>
-            <td class="col2"><b>Author:&nbsp;&nbsp;</b></td>
-            <td class="col3">
-              {{ item['search-author'].join('; ') }}
-            </td>
-          </tr>
-          <tr>
-            <td class="col2"><b>Addressee:&nbsp;&nbsp;</b></td>
-            <td class="col3">
-              {{ item['search-addressee'].join('; ') }}
-            </td>
-          </tr>
-          <tr>
-            <td class="col2"><b>Date:&nbsp;&nbsp;</b></td>
-            <td class="col3">{{ item.displayDate }}</td>
-          </tr>
-          <tr>
-            <td class="col2"><b>Classmark:&nbsp;&nbsp;</b></td>
-            <td class="col3">{{ item['search-classmark'] }}</td>
-          </tr>
-          <tr>
-            <td class="col2"><b>Letter no:&nbsp;&nbsp;</b></td>
-            <td class="col3">{{ item['document-id'] }}</td>
-          </tr>
-          <tr>
-            <td class="col2"><b>Log:&nbsp;&nbsp;</b></td>
-            <td class="col3">{{ item['lognum'] }}</td>
-          </tr>
-          <tr>
-            <td class="col2"><b>Document Online:&nbsp;&nbsp;</b></td>
-            <td class="col3">{{ item['facet-document-online'] }}</td>
-          </tr>
-        </tbody>
-        <tbody v-if="['people','bibliography'].includes(item['facet-document-type'])">
-        <tr>
-          <td class="col2"><b>Filename:&nbsp;&nbsp;</b></td>
-          <td class="col3">{{ item['filename'] }}</td>
-        </tr>
-        <tr>
-          <td class="col2"><b>ID:&nbsp;&nbsp;</b></td>
-          <td class="col3">{{ item['document-id'] }}</td>
-        </tr>
-        <tr>
-          <td class="col2"><b>Status:&nbsp;&nbsp;</b></td>
-          <td class="col3">{{ item['facet-status'] }}</td>
-        </tr>
-        </tbody>
-      </table>
+      <div v-else-if="item['facet-document-type'] == 'people'">
+        <div class="row" v-if="item['search-dates']">
+          <div class="col-3 text-right"><b>Date:</b></div><div class="col">{{ item['search-dates'].join('; ') }}</div>
+        </div>
+        <div class="row">
+          <div class="col-3 text-right"><b>Record ID:</b></div><div class="col">{{ item['document-id'] }}</div>
+        </div>
+      </div>
+      <div class="row summary_row" v-if="item['content_summary'] && item['facet-document-type'] == 'letter'">
+        <div class="col-3 text-right"><b>Summary:</b></div><div class="col" v-html="item['content_summary']"></div>
+      </div>
+      <div class="row" v-if="item['contributor']">
+        <div class="col-3 text-right"><b>Contributor:</b></div><div class="col">{{ item['contributor'].join('; ') }}</div>
+      </div>
     </div>
-    <div class="matches" v-if="item.highlighting.length > 0">
-      <h3>
-        {{ item.highlighting.length }}
-        snippet{{
-          item.highlighting.length == 1 ? '' : 's'
-        }}
-      </h3>
-      <div class="snippets">
-        <ul>
-          <TransitionGroup>
-            <li
-              :class="
+    <div class="col-3 pt-2 text-right" v-if="item['thumbnail']">
+      <a :href="item.path"><img class="img-fluid" alt="thumbnail" :src="item['thumbnail']"></a>
+    </div>
+    <div class="col-12" v-if="item.highlighting.length > 0">
+      <div class="matches row">
+        <h3 class="snippet_header">
+          {{ item.highlighting.length }}
+          snippet{{
+            item.highlighting.length == 1 ? '' : 's'
+          }}
+        </h3>
+        <div class="snippet_container">
+          <ul class="matches fold">
+            <TransitionGroup>
+              <li
+                :class="
                 'snippet count' +
                 (index + 1) +
                 ' ' +
                 (show_snippets || index <= 2)
               "
-              v-show="index <= 2 || show_snippets"
-              v-for="(snippet, index) in item.highlighting"
-              v-html="
+                v-show="index <= 2 || show_snippets"
+                v-for="(snippet, index) in item.highlighting"
+                v-html="
                 '&#x02026;' +
                 snippet
                   .replace(/(^[^<>]*>|<[^>]*$)/g, '')
@@ -157,31 +92,52 @@ const show_snippets = ref(false)
                   .replace(/(<a [^>]+>|<\/a>)/g, '') +
                 '&#x02026;'
               "
-              :key="JSON.stringify(snippet)"
-            />
-          </TransitionGroup>
-        </ul>
+                :key="JSON.stringify(snippet)"
+              />
+            </TransitionGroup>
+          </ul>
+        </div>
+        <button
+          class="show-more-matches matches-toggle badge badge-light badge-pill border mx-auto mt-2 mb-2"
+          @click="() => (show_snippets = !show_snippets)"
+          v-if="item.highlighting.length > 3"
+        >
+          <span class="more" v-show="!show_snippets"><i class="fas fa-angle-double-down"></i> MORE <i class="fas fa-angle-double-down"></i></span>
+          <span class="less" v-show="show_snippets"><i class="fas fa-angle-double-up"></i> FEWER <i class="fas fa-angle-double-up"></i></span>
+        </button>
       </div>
-      <button
-        class="show-more-matches"
-        @click="() => (show_snippets = !show_snippets)"
-        v-if="item.highlighting.length > 3"
-      >
-        <span class="more" v-show="!show_snippets">More matches +</span>
-        <span class="less" v-show="show_snippets">– Less</span>
-      </button>
     </div>
   </div>
 </template>
 
-<style scoped>
-.search-results-page .search-result-item .snippets {
-  transition: none;
-  overflow: auto;
+<style>
+.summary_row p {
+  margin: 0;
+}
+.docHit .snippet_container {
+  width: 100%;
+  margin-left: 15px;
+  margin-right: 15px;
 }
 
-.search-results-page .search-result-item .show-more-matches .less {
-  display: block;
+.docHit .snippet br {
+  display: none;
+}
+
+.docHit .snippet .match {
+  color: #d32535;
+  font-weight: bold;
+  font-style: normal;
+}
+
+.snippet_header {
+  padding: 1em 0 0.5em 0;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.ribbon span {
+  box-shadow: 0 3px 3px -5px black;
 }
 
 .v-enter-active,
@@ -192,24 +148,5 @@ const show_snippets = ref(false)
 .v-enter-from,
 .v-leave-to {
   opacity: 0;
-}
-.search-results-page .search-result-item h2.item-title {
-  display: inline-block;
-  float: none;
-}
-
-
-.site.search-result-item div.key-image.this-site {
-  float: right;
-  width: 25%;
-}
-
-.this-site-result-wrap {
-  width: 70%;
-  float: left;
-}
-div.darwin-search-results-container .search-result-item .summary {
-  float: none;
-  width: 100%;
 }
 </style>

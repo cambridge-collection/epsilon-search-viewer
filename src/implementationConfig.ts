@@ -5,12 +5,12 @@ import { _params_to_query_structure } from '@/lib/utils'
 
 
 /* Boolean toggle controlling whether _tracer_bullet should output to console log */
-const debug:boolean = false;
+const debug: boolean = true
 
 /* URL to the search API
-   PROD: https://search.darwinproject.ac.uk
+   PROD: https://epsilon-editorial-search.cudl-sandbox.net
 */
-const api_url: string = "http://localhost"
+const api_url: string = 'https://epsilon-editorial-search.cudl-sandbox.net'
 
 type Facet = {
   name: string;
@@ -30,47 +30,38 @@ const facet_key: Record<string, Facet> = {
   'f1-author': { name: 'Author', count: 5 },
   'f1-addressee': { name: 'Addressee', count: 5 },
   'f1-correspondent': { name: 'Correspondent', count: 5 },
-  'f1-year': { name: 'Date', alias:"f1-date", count: 999, subfacet: {'f1-year-month': { name: 'Date', count: 999, subfacet: {'f1-year-month-day': { name: 'Date', count: 999 } } } } },
+  'f1-decade': {
+    name: 'Date', alias: 'f1-date', count: 999,
+    subfacet: {
+      'f1-decade-year': {
+        name: 'Date', count: 999,
+        subfacet: {
+          'f1-decade-year-month': {
+            name: 'Date', count: 999,
+            subfacet: {
+              'f1-decade-year-month-day': { name: 'Date', count: 999 }
+            }
+          }
+        }
+      }
+    }
+  },
   'f1-repository': { name: 'Repository', count: 5 },
-  'f1-volume': { name: 'Volume', count: 5 },
-  'f1-entry-cancelled': { name: 'Entry cancelled', count: 5 },
-  'f1-document-online': { name: 'Document online', count: 5 },
-  'f1-letter-published': { name: 'Letter published', count: 5 },
-  'f1-translation-published': { name: 'Translation published', count: 5 },
-  'f1-footnotes-published': { name: 'Footnotes published', count: 5 },
-  'f1-has-tnotes': { name: 'Has tnotes', count: 5 },
-  'f1-has-cdnotes': { name: 'Has cdnotes', count: 5 },
-  'f1-has-annotations': { name: 'Has annotations', count: 5 },
-  'f1-linked-to-cudl-images': { name: 'Linked to CDL images', count: 5},
-  'f1-darwin-letter': { name: 'Darwin letter', count: 5},
-  's-commentary': { name: 'Commentary', count: 5 },
-  's-key-stage': { name: 'Key Stage', count: 5 },
-  's-ages': { name: 'Learning Band', count: 5 },
-  's-topics': { name: 'Topics', count: 5 },
+  'f1-contributor': { name: 'Contributor', count: 99 },
+  'f1-transcription-available': { name: 'Transcription available', count: 5 },
+  'f1-cdl-images-linked': { name: 'CDL images linked', count: 5 },
 }
 
 /*  An ordered array of the facet buckets to be displayed in the sidebar */
-const desired_facets: string[] = ['f1-document-type',
-  'f1-author',
+const desired_facets: string[] = ['f1-author',
   'f1-addressee',
   'f1-correspondent',
-  'f1-year',
+  'f1-decade',
+  'f1-document-type',
   'f1-repository',
-  'f1-volume',
-  'f1-entry-cancelled',
-  'f1-document-online',
-  'f1-letter-published',
-  'f1-translation-published',
-  'f1-footnotes-published',
-  'f1-has-tnotes',
-  'f1-has-cdnotes',
-  'f1-has-annotations',
-  'f1-linked-to-cudl-images',
-  'f1-darwin-letter',
-  's-commentary',
-  's-key-stage',
-  's-ages',
-  's-topics',]
+  'f1-contributor',
+  'f1-transcription-available',
+  'f1-cdl-images-linked']
 
 /* Facets that are expandable */
 const expandable: string[] = [
@@ -78,7 +69,6 @@ const expandable: string[] = [
   'addressee',
   'correspondent',
   'repository',
-  'volume',
 ]
 
 /* Search params used in the advanced search page */
@@ -97,7 +87,7 @@ const advanced_params = [
   'search-date-type',
   'exclude-widedate',
   'search-repository',
-  'exclude-cancelled',
+  'exclude-cancelled'
 ]
 
 /* Conditional function that will be run if it exists when first processing all url parameters
@@ -134,7 +124,7 @@ const sort_fields: string[] = ['score', 'author', 'addressee', 'date']
 *  This function standardises all facets to f1-{face-name}.
 */
 const _tidy_facet_paramname = (str: string) => {
-  return str.replace(/^f\d+-/, 'f1-');
+  return str.replace(/^f\d+-/, 'f1-')
 }
 
 /* Conditional function that will be run if it exists when first processing url parameters.
@@ -144,11 +134,22 @@ const _tidy_facet_paramname = (str: string) => {
 *  Similarly, search-date-type is a parameter that defaults to 'on' when performing an advanced search. However, it's
 *  only actually used when some temporal parameters are set.
 */
-const _remove_unused_params = (params: Array<{ key: string; value: string }>): Array<{ key: string; value: string }> => {
+const _remove_unused_params = (params: Array<{ key: string; value: string }>): Array<{
+  key: string;
+  value: string
+}> => {
   let newParams = [...params]
 
   if (!['year', 'month', 'day'].some(key => newParams.some(item => item.key === key))) {
-    newParams = newParams.filter(item => item.key !== 'search-date-type');
+    newParams = newParams.filter(item => item.key !== 'search-date-type')
+  }
+
+  if (!newParams.some(item => item.key === 'collection' && item.value)) {
+    newParams = newParams.filter(item => item.key !== 'collection-join');
+  }
+
+  if (!newParams.some(item => item.key === 'text' && item.value)) {
+    newParams = newParams.filter(item => item.key !== 'sectionType');
   }
 
   // Remove param for core if it's the main tei core. That's the default
@@ -174,11 +175,11 @@ function tab_class(name: string, core: string) {
 
 function tab_href(name: string, core: string, all_params: { key: string; value: string }[]) {
   let path = tab_active(name, core) ? '#' : '/search?'
-  const params =  all_params.filter(item => item.key === 'keyword')
-  params.push({key: 'page', value: '1' })
+  const params = all_params.filter(item => item.key === 'keyword')
+  params.push({ key: 'page', value: '1' })
 
   if (name === 'this-site') {
-    params.push({key: 'tc', value: 'pages'})
+    params.push({ key: 'tc', value: 'pages' })
   }
 
   if (!tab_active(name, core)) {
@@ -187,4 +188,18 @@ function tab_href(name: string, core: string, all_params: { key: string; value: 
   return path
 }
 
-export {api_url, desired_facets, facet_key, advanced_params, params_to_remove, non_filtering_keys, sort_fields, expandable, debug, _tidy_facet_paramname, _remove_unused_params, tab_class, tab_href}
+export {
+  api_url,
+  desired_facets,
+  facet_key,
+  advanced_params,
+  params_to_remove,
+  non_filtering_keys,
+  sort_fields,
+  expandable,
+  debug,
+  _tidy_facet_paramname,
+  _remove_unused_params,
+  tab_class,
+  tab_href
+}
