@@ -8,6 +8,7 @@ import NoResults from '@/components/NoResults.vue';
 import 'vue-awesome-paginate/dist/style.css';
 import { CSpinner } from '@coreui/vue';
 import { _is_hierarchical, cancel_link, _get_first_value, _query_param_sort, _params_to_query_structure, _tracer_bullet } from '@/lib/utils';
+import ExpandableContributorBlurb from '@/components/expandableContributorBlurb.vue';
 import * as implementation from '@/implementationConfig'
 
 // Use this to check for the existence of methods and to run them
@@ -319,6 +320,9 @@ onMounted(async () => {
         </div>
       </div>
       <div v-if="total >= 1">
+        <div class="container-fluid mb-4">
+          <ExpandableContributorBlurb v-for="o in filtering_params.filter(item => item.key=='f1-contributor')" :contributor="o.value" :key="o.value" />
+        </div>
       <div class="row" v-show="total >= 1">
         <div class="col num_items">
           <span id="itemCount">{{ total }}</span> Item{{

@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<brand xmlns="http://www.w3.org/1999/xhtml">
+   
+   <links>
+       <script async="async" src="https://www.googletagmanager.com/gtag/js?id=G-GX00VVE4N6"/>
+      <link rel="stylesheet" href="/css/bootstrap.css" type="text/css"/>
+      <link rel="stylesheet" href="/css/epsilon.css" type="text/css"/>
+      <link rel="stylesheet" href="/css/font-awesome.css"/>
+      <link rel="stylesheet" href="/script/jquery-multi-select/multiselect.css"/>
+   </links>
+   
+   <dynaxml.links>
+       <script async="async" src="https://www.googletagmanager.com/gtag/js?id=G-GX00VVE4N6"/>
+      <link rel="stylesheet" href="/css/bootstrap.css" type="text/css"/>
+      <link rel="stylesheet" href="/css/epsilon.css" type="text/css"/>
+      <link rel="stylesheet" type="text/css" href="/css/texts.css" media="screen, print"/>
+      <link rel="stylesheet" type="text/css" href="/css/print.css" media="print"/>
+      <link rel="stylesheet" href="/css/font-awesome.css"/>
+   </dynaxml.links>
+   
+   <core-js>
+      <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous" />
+      <script type="text/javascript" src="/script/matches.js"/>
+      <link rel="stylesheet" type="text/css" href="/script/cookieconsent2/cookieconsent.min.css" />
+      <script src="/script/cookieconsent2/cookieconsent.min.js" data-cfasync="false"></script>
+      <script>
+         window.addEventListener('load', function(){
+         window.cookieconsent.initialise({
+         revokeBtn: '<div class="cc-revoke"></div>',
+         type: "opt-in",
+         position: "top",
+         theme: "classic",
+         palette: {
+         popup: {
+         background: "#ccc",
+         text: "#444"
+         },
+         button: {
+         background: "#8c6",
+         text: "#fff"
+         }
+         },
+         content: {
+         link: "Privacy Statement",
+         href: "/privacy-statement"
+         },
+         onInitialise: function(status) {
+         if(status == cookieconsent.status.allow) site_cookies();
+         },
+         onStatusChange: function(status) {
+         if (this.hasConsented()) site_cookies();
+         }
+         })
+         });
+         
+         function site_cookies() {
+         
+         window.dataLayer = window.dataLayer || [];
+         function gtag(){dataLayer.push(arguments);}
+         gtag('js', new Date());
+         
+         gtag('config', 'G-GX00VVE4N6');
+         }
+      </script>
+   </core-js>
+   
+   <mathjax-js>
+      <script type="text/x-mathjax-config">
+         MathJax.Hub.Config({
+         jax: ["input/MathML", "output/HTML-CSS"],
+         extensions: ["mml2jax.js","MathMenu.js","MathZoom.js", "AssistiveMML.js"],
+         });
+      </script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js" async="async" type="text/javascript"/>
+   </mathjax-js>
+   
+   <header/>
+   
+   <dynaxml.header/>
+   
+   <footer>
+      <div id="footer" class="container-fluid mt-4 pt-3">
+         <div class="row justify-content-center">
+            <div class="col-md-3 col-12">
+               <div class="footer-group">
+                  <h3 class="h6">Browse</h3>
+                  <ul class="list-unstyled">
+                     <li><a href="/search?sort=date">All records</a></li>
+                     <li><a href="/search?f1-document-type=letter&amp;sort=date">Letters</a></li>
+                     <li><a href="/search?f1-document-type=people&amp;sort=name">People</a></li>
+                  </ul>
+               </div>
+               <div class="footer-group">
+                  <h3 class="h6">Search</h3>
+                  <ul class="list-unstyled">
+                     <li><a href="/search">Keyword</a></li>
+                     <li><a href="/advanced-search">Advanced Search</a></li>
+                  </ul>
+               </div>
+            </div>
+            <div class="col-md-3 col-12">
+               <div class="footer-group">
+                  <h3 class="h6">Work with us</h3>
+                  <ul class="list-unstyled">
+                     <li><a href="/contributing-your-collection">Contributing your collection</a></li>
+                     <li><a href="/technical-details">Technical details</a></li>
+                  </ul>
+               </div>
+            </div>
+            <div class="col-md-3 col-12">
+               <div class="footer-group">
+                  <h3 class="h6">About Epsilon</h3>
+                  <ul class="list-unstyled">
+                     <li><a href="/history-and-contributors">History and contributors</a></li>
+                     <li><a href="/rights-statement-and-takedown-policy">Rights and takedown policy</a></li>
+                     <li><a href="/privacy-statement">Privacy statement</a></li>
+                     <li><a href="/how-to-contact-us">How to contact us</a></li>
+                  </ul>
+               </div>
+            </div>
+         </div>
+      </div>
+   </footer>
+   
+   <collection-data>
+      <collection xml:id="joseph-dalton-hooker">
+         <name>The Joseph Dalton Hooker Collection</name>
+         <contributor>Hooker Project</contributor>
+         <date notBefore="1817-06-30" notAfter="1911-12-10" />
+         <url>https://www.kew.org/explore-our-collections/correspondence-collections/joseph-hooker-collections</url>
+         <img src="/css/images/hooker.jpg"/>
+         <blurb>
+            <p>The Joseph Dalton Hooker Correspondence Project at Kew is making available online the personal and scientific correspondence of the botanist and explorer Sir Joseph Dalton Hooker (1817–1911), Director of the Royal Botanic Gardens’ Kew from 1865-1885. The project was conceived by staff of The University of Sussex and Kew's Library, Art and Archive department and began as a partnership between Kew and the University of Sussex's Centre for World Environmental History. It has been made possible by support from the Stevenson Family Charitable Trust. Letter summaries can be searched through Ɛpsilon, with links to images and transcriptions at the project site at Kew (<a href="https://www.kew.org/explore-our-collections/correspondence-collections/joseph-hooker-collections">https://www.kew.org/explore-our-collections/correspondence-collections/joseph-hooker-collections</a>).</p>
+         </blurb>
+      </collection>
+      <collection xml:id="john-tyndall">
+         <name>The John Tyndall Collection</name>
+         <contributor>Tyndall Project</contributor>
+         <date notBefore="1820-08-02" notAfter="1893-12-04" />
+         <url>http://www.yorku.ca/tyndall/</url>
+         <img src="/css/images/tyndall.jpg"/>
+         <blurb><p>The collected correspondence of the physicist John Tyndall (c.1820-1893), about 8000 letters, is being published by scholars from five countries, lead by Bernard Lightman (York University), Michael Reidy (Montana State University), James Elwick (York Univeristy) and Roland Jackson (Royal Institution), in an 19-volume edition, The Correspondence of John Tyndall (University of Pittsburgh Press, 2016–). For more information, see: <a href="http://yorku.ca/tyndall/">http://yorku.ca/tyndall/</a>. By agreement with the publishers, the full texts of the published letters from the first volume can be searched in Ɛpsilon, but are not yet available to be read online. For details of the edition see <a href="https://www.upress.pitt.edu/series/the-correspondence-of-john-tyndall-2/">https://www.upress.pitt.edu/series/the-correspondence-of-john-tyndall-2/</a>.</p></blurb>
+      </collection>
+      <collection xml:id="michael-faraday">
+         <name>The Michael Faraday Collection</name>
+         <contributor>Faraday Project</contributor>
+         <date notBefore="1791-09-22" notAfter="1867-08-25" />
+         <url>http://www.rigb.org/our-history/michael-faraday/michael-faraday-correspondence</url>
+         <img src="/css/images/faraday.jpg"/>
+         <blurb><p>Michael Faraday Correspondence: A complete edition of over 5000 of Faraday's extant letters in six volumes, was published by the Institution of Engineering and Technology (formerly the Institution of Electrical Engineers) under the editorship of Frank James at the Royal Institution. For details, see <a href="http://www.rigb.org/our-history/michael-faraday/michael-faraday-correspondence">http://www.rigb.org/our-history/michael-faraday/michael-faraday-correspondence</a>. Volume 1 was published in 1991 and volume 6 in 2012. The full texts are also being made available through Ɛpsilon.</p></blurb>
+      </collection>
+      <collection xml:id="charles-darwin">
+         <name>The Charles Darwin Collection</name>
+         <contributor>Darwin Correspondence Project</contributor>
+         <date notBefore="1809-02-12" notAfter="1882-04-19" />
+         <url>https://www.darwinproject.ac.uk/</url>
+         <img src="/css/images/darwin.jpg"/>
+         <blurb>
+            <p>The Darwin Correspondence Project is publishing letters written by and to the naturalist Charles Darwin (1809–1882). Complete transcripts of letters are being made available through the Project’s website (<a href="www.darwinproject.ac.uk">www.darwinproject.ac.uk</a>) after publication in the ongoing print edition of <a href="http://www.cambridge.org/gb/search?iFeelLucky=false&amp;site=&amp;query=darwin+correspondence&amp;searchSubmitProducts=Search&amp;currentTheme=Academic_v1">The Correspondence of Charles Darwin (Cambridge University Press 1985–)</a>. Metadata and summaries of all known letters (c. 15,000) appear in Ɛpsilon, and the full texts of available letters can also be searched, with links to the full texts.</p>
+         </blurb>
+      </collection>
+      <collection xml:id="john-henslow">
+         <name>The Correspondence of John Stevens Henslow</name>
+         <contributor>Henslow Correspondence Project</contributor>
+         <date notBefore="1796-02-06" notAfter="1861-05-16" />
+         <img src="/css/images/henslow.jpg"/>
+         <blurb><p>John Stevens Henslow (1796–1861) spent his adult life attached to the University of Cambridge. He graduated in mathematics in 1818, then acted as a demonstrator for the Professor of Chemistry, carried out and published papers on field geology, and was a founder of the Cambridge Philosophical Society in 1821. He held two University Chairs: Mineralogy from 1823–27, and Botany from 1825 until his death in 1861. </p>
+            <p>Henslow was closely involved in University affairs and the introduction of science into the Cambridge Tripos. He was a gifted teacher and pedagogic innovator. His best-known student was Charles Darwin, with whom he maintained a life-long friendship and correspondence. Henslow also acted as the (unofficial) agent for Lord Palmerston, one of the University’s two MPs, in the election of 1826. </p>
+            <p>In 1823 Henslow was ordained and became curate of Little St Mary’s. He was awarded the living of Cholsey in 1835, and became Rector of Hitcham, near Stowmarket in Suffolk, in 1837. Henslow moved to Hitcham, but continued giving his botany course at Cambridge in May every year until his death. During this time, he attempted to introduce science into agriculture nationally and locally, whilst also taking steps to improve the lives of agricultural labourers. Universal education was a constant concern for him, through the University of London, the Department of Science and Art, regional museums, and his parish school.</p>
+            <p>Henslow had a network of correspondents across all levels of society, nearly 300 in these surviving letters. The letters he retained until his death are mostly held in the Cambridge University Library, but others have been dispersed around the world. Letters between Henslow and Darwin were published in 1967 (by Nora Barlow) and also in <em>The Correspondence of Charles Darwin</em> (from 1985 onwards). </p>
+            <p>The Henslow letters have been collected and transcribed by M. E. Edmunds, K. H. Joice, A. L. Jones, D. Kohn, J. G. Murrell and J. S. Parker.</p></blurb>
+      </collection>
+      <collection xml:id="darwin-family-letters">
+         <name>The Darwin Family Letters Collection</name>
+         <contributor>Darwin Family Letters</contributor>
+         <date notBefore="1851-01-01" notAfter="1896-12-31" />
+         <url>http://www.cambridge.org/gb/academic/subjects/literature/english-literature-1830-1900/darwin-and-women-selection-letters?format=HB</url>
+         <img src="/css/images/darwin.jpg"/>
+         <blurb><p>Transcriptions of a part of the archive of letters to and from members of the Darwin family held at Cambridge University Library (DAR 210, 219, 239, 245, 251, 258). Transcriptions are in various states of preparation and may not be reliable. Letters to and from Charles Darwin are not included (see Charles Darwin collection).</p></blurb>
+      </collection>
+      <collection xml:id="andré-marie-ampère">
+         <name>The André-Marie Ampère Collection</name>
+         <contributor>La Correspondance d’André-Marie Ampère</contributor>
+         <date notBefore="1775-01-20" notAfter="1836-06-10" />
+         <img src="/css/images/ampere.jpg"/>
+         <blurb><p>The letter texts of the French physicist and mathematician André-Marie Ampère (1775-1836) have been made available by the editors of the <a href="http://www.ampere.cnrs.fr/correspondance/index.php">online Correspondance d’ Ampère</a>. The letters are also available through their site, together with a history of their publication, additional edited manuscripts, and research resources.</p></blurb>
+      </collection>
+      <collection xml:id="ferdinand-von-mueller">
+         <name>The Ferdinand von Mueller Collection</name>
+         <contributor>Correspondence of Ferdinand von Mueller Project</contributor>
+         <cite><i>Correspondence of Ferdinand von Mueller</i>, edited by R.W. Home, Thomas A. Darragh, A.M. Lucas, Sara Maroske, D.M. Sinkora<sup>&#8224;</sup>, J.H. Voigt<sup>&#8224;</sup> and Monika Wells</cite>
+         <date notBefore="1825-06-30" notAfter="1896-10-10" />
+         <img src="/css/images/mueller.png"/>
+         <blurb><p>Since 1987 more than 15,000 letters written by and to the Australian botanist and explorer Ferdinand von Mueller have been located and edited by R.W. Home, Thomas A. Darragh, A.M. Lucas, Sara Maroske, D.M. Sinkora<sup>&#8224;</sup>, J.H. Voigt<sup>&#8224;</sup> and Monika Wells. The letters included here are a sample of the total, and lack the apparatus files. Users who need access to the citations or illustrations associated with specific letters can contact the editors at <a href="mailto:muellercorrespondence@rbg.vic.gov.au">muellercorrespondence@rbg.vic.gov.au</a>. The full corpus will be mounted here in due course.  Selected letters have been published in a print edition, <em>Regardfully yours: selected correspondence of Ferdinand von Mueller</em> (Bern: Peter Lang, 1998–2006. See <a href="https://www.peterlang.com/search?q1=mueller&amp;searchBtn=">https://www.peterlang.com/search?q1=mueller&amp;searchBtn=</a>). For further information about the project, see <a href="https://www.rbg.vic.gov.au/science/herbarium-and-resources/library/mueller-correspondence-project">https://www.rbg.vic.gov.au/science/herbarium-and-resources/library/mueller-correspondence-project</a>.</p></blurb>
+      </collection>
+      <collection xml:id="john-herschel">
+         <name>The Sir John Herschel Collection</name>
+         <contributor>John Herschel Project</contributor>
+         <date notBefore="1792-03-07" notAfter="1871-05-11" />
+         <img src="/css/images/herschel.png"/>
+         <blurb><p>The preparation of the print Calendar of the Correspondence of Sir John Herschel (Michael J. Crowe ed., David R. Dyck and James J. Kevin assoc. eds, Cambridge, England: Cambridge Univ. Press, 1998, viii + 828 pp) which was funded by the National Science Foundation, took ten years. It was accomplished by a team of seventeen professors, visiting scholars, graduate students, advanced undergraduates, and staff working at the University of Notre Dame.</p>
+            <p>The first online version of Calendar was created in 2009 by Dr Marvin Bolt and Steven Lucy, working at the Webster Institute of the Adler Planetarium, and it is that data that has now been reformatted for incorporation into Ɛpsilon.</p>
+            <p>Further information about Herschel, his correspondence, and the editorial method is available online here: <a href="http://historydb.adlerplanetarium.org/herschel/?p=intro">http://historydb.adlerplanetarium.org/herschel/?p=intro</a></p>
+            <p>No texts of Herschel’s letters are currently available through Ɛpsilon.</p></blurb>
+      </collection>
+      <collection xml:id="alfred-russel-wallace">
+         <name>The Alfred Russel Wallace Collection</name>
+         <contributor>Alfred Russel Wallace Correspondence Project</contributor>
+         <date notBefore="1823-01-08" notAfter="1913-11-07" />
+         <url>https://wallaceletters.myspecies.info/content/homepage</url>
+         <img src="/css/images/wallace.png"/>
+         <blurb>
+            <p>Alfred Russel Wallace (1823 - 1913) was one of the world's most important scientists. His seminal <a href="https://wallacefund.myspecies.info/content/scientific-legacy">contributions to biology</a> rival those of his friend and colleague Charles Darwin, though he is far less well known. Together Wallace and Darwin proposed the theory of evolution by natural selection in 1858, and their prolific subsequent work laid the foundations of modern evolutionary biology, and much more besides.</p>
+            <p>Wallace made enduring scholarly contributions to subjects as diverse as glaciology, land reform, anthropology, ethnography, epidemiology, and astrobiology. His pioneering work on evolutionary biogeography (the science that seeks to explain the geographical distribution of organisms) led to him becoming recognised as that subject’s ‘father’. Beyond this Wallace is regarded as the pre-eminent collector and field biologist of tropical regions of the 19th century, and his book <em>The Malay Archipelago</em> (which was Joseph Conrad’s favourite bedside reading) is one of the most celebrated travel writings of that century and has never been out of print. Wallace was a man with an extraordinary breadth of interests who was actively engaged with many of the big questions and important issues of his day. He was anti-slavery, anti-eugenics, anti-vivisection, anti-militarism, anti-Imperialism, a conservationist and an advocate of woman's rights. He strongly believed in the rights of the ordinary person, was a socialist, an <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3321934">anti-vaccinationist</a> (for rational reasons), and a believer in <a href="https://www.cambridge.org/core/journals/modern-intellectual-history/article/credible-witnessing-a-r-wallace-spiritualism-and-a-new-branch-of-anthropology/24BDED3F341325758CB186CF1245F195">naturalistic, evolutionary spiritualism</a>. He did not come from a privileged background and was largely self-taught. For a brief biography see <a href="https://wallaceletters.myspecies.info/content/mini-biography">https://wallaceletters.myspecies.info/content/mini-biography</a></p>
+            <p><a href="https://wallaceletters.myspecies.info">The Wallace Correspondence Project (WCP)</a> was founded by <a href="https://www.researchgate.net/profile/George_Beccaloni">George Beccaloni</a> in 2010. Its aims are to locate, digitise, catalogue, transcribe, interpret and publish Wallace's surviving correspondence and other manuscripts. About 5,700 letters to and from Wallace are currently known to survive, and they are held by c. 240 institutions and individuals worldwide. Wallace's letters are a biographical treasure trove, which provides a far better picture of the 'real' Wallace than his heavily edited and censored published writings (e.g. his autobiography <em>My Life</em> (1905) and his letters in Marchant's <em>Letters and Reminiscences</em> (1916)).  For example, Wallace never even mentions his wife's name (Annie) in any of his published writings, including his autobiography. The letters are also key to gaining a deeper understanding of his scientific and other work: how and why his ideas arose, and how they evolved over time.</p>
+            <p>The WCP is unlocking this valuable resource by gathering all the letters together for the first time, and transcribing them so that they can be more easily read and information within them discovered using electronic searches for words and phrases. The vast amount of unpublished information which is coming to light will surely form the basis for numerous articles, scholarly papers, PhD theses and perhaps the first definitive biography.</p>
+            <p>Epsilon is being used by the WCP's as its online archive of Wallace's correspondence. It replaces our previous archive, Wallace Letters Online, which was last updated in 2015. The process of editing the transcripts and associated metadata is a work in progress which will take many years to complete. Our project’s policy is, however, to make the information we have available to users at the earliest possible opportunity, even if it is incomplete and/or imperfect. For a guide to our data, including the protocols we use for metadata and transcriptions, please see <a href="https://wallaceletters.myspecies.info/content/epsilon">https://wallaceletters.myspecies.info/content/epsilon</a></p>
+            <p class="row">
+               <span class="col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center text-center align-items-center"><img src="/css/images/wallace-sponsors/NHM_logo_0.png"/></span>
+               <span class="col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center text-center align-items-center"><img src="/css/images/wallace-sponsors/CDT_Logo.3_0.png"/></span>
+               <span class="col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center text-center align-items-center"><img src="/css/images/wallace-sponsors/MellonLogo2_2.png"/></span>
+               <span class="col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center text-center align-items-center"><img src="/css/images/wallace-sponsors/TempletonLogo.png"/></span>
+               <span class="col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center text-center align-items-center"><img src="/css/images/wallace-sponsors/SeaTrekLogo_0.png"/></span>
+            </p>
+         </blurb>
+      </collection>
+      <collection xml:id="the-linnean-society-of-london">
+         <name>The Linnean Society of London Collection</name>
+         <contributor>The Linnean Society of London</contributor>
+         <date notBefore="1759-12-02" notAfter="1828-03-17" />
+         <url>http://linnean-online.org</url>
+          <blurb><p>The scientific and personal correspondence of James Edward Smith (1759-1828), purchaser of the collections of Swedish naturalist Carl Linnaeus (1707-1778) and founder of the Linnean Society of London in 1788, was presented to the Linnean Society between 1857 and 1872 by his widow Pleasance Smith (1773-1877). Since then, it has been complemented by additional series. The collection was catalogued, conserved, and digitised from 2010 to 2013, thanks to the generous support of the Andrew W. Mellon Foundation. Letters can be searched through Ɛpsilon, with links to images and summaries available on the Linnean Society’s Online Collections (<a href="http://linnean-online.org/smith_correspondence.html">http://linnean-online.org/smith_correspondence.html</a>). </p></blurb>
+      </collection>
+      <collection xml:id="mary-somerville">
+         <name>The Mary Somerville Collection</name>
+         <contributor>Brigitte Stenhouse</contributor>
+         <date notBefore="1792-03-07" notAfter="1871-05-11" />
+          <blurb><p>Transcriptions provided by Brigitte Stenhouse.</p></blurb>
+      </collection>
+      <collection xml:id="royal-society">
+         <name>Royal Society</name>
+         <contributor>Royal Society</contributor>
+         <date notBefore="1600-01-01" notAfter="1982-12-31" />
+          <blurb><p>Metadata provided by the Royal Society.</p></blurb>
+      </collection>
+      <collection xml:id="william-kemp">
+         <name>The William Kemp Collection</name>
+         <contributor>Ruth Cramond</contributor>
+         <date notBefore="1600-01-01" notAfter="1982-12-31" />
+         <blurb><p>Metadata and transcriptions by Ruth Cramond.</p></blurb>
+      </collection>
+      <collection xml:id="epsilon-project">
+         <name>Epsilon Project</name>
+         <contributor>Epsilon</contributor>
+         <date notBefore="1600-01-01" notAfter="1982-12-31" />
+         <!--<img src="/css/images/herschel.png"/>-->
+         <blurb><p>Metadata by Epsilon.</p></blurb>
+      </collection>
+       <collection xml:id="william-henry-fox-talbot">
+           <name>William Henry Fox Talbot Collection</name>
+           <contributor>The Correspondence of William Henry Fox Talbot Project</contributor>
+           <date notBefore="1791-09-22" notAfter="1867-08-25" />
+           <url>https://foxtalbot.dmu.ac.uk/index.html</url>
+           <!--<img src="/css/images/faraday.jpg"/>-->
+           <blurb><p><!-- --></p></blurb>
+       </collection>
+   </collection-data>
+</brand>
