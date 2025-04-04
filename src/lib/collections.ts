@@ -17,7 +17,7 @@ interface CollectionData {
 type CollectionDictionary = { [contributor: string]: CollectionData };
 
 /**
- * Helper function to extract inner XML as a string from an Element.
+ * Get inner XML as a string from an Element
  */
 function getInnerXML(element: Element): string {
   const serializer = new XMLSerializer();
@@ -29,13 +29,12 @@ function getInnerXML(element: Element): string {
 }
 
 /**
- * Parses the XML string and builds a dictionary keyed by the unique <contributor>.
+ * Parses the XML string to build a dictionary for the collection data
  */
 function buildCollectionDictionary(xmlString: string): CollectionDictionary {
   const parser = new DOMParser();
   const xmlDoc = parser.parseFromString(xmlString, "application/xml");
 
-  // Our XML defines a default namespace
   const ns = "http://www.w3.org/1999/xhtml";
 
   const collectionDataElem = xmlDoc.getElementsByTagNameNS(ns, "collection-data")[0];
@@ -49,7 +48,7 @@ function buildCollectionDictionary(xmlString: string): CollectionDictionary {
   for (let i = 0; i < collectionElems.length; i++) {
     const collectionElem = collectionElems[i];
 
-    // Extract attributes and child elements
+    // Get child elements
     const id = collectionElem.getAttribute("xml:id") || "";
     const nameElem = collectionElem.getElementsByTagNameNS(ns, "name")[0];
     const name = nameElem ? nameElem.textContent?.trim() || "" : "";
@@ -66,9 +65,10 @@ function buildCollectionDictionary(xmlString: string): CollectionDictionary {
     const url = urlElem ? urlElem.textContent?.trim() || undefined : undefined;
 
     const imgElem = collectionElem.getElementsByTagNameNS(ns, "img")[0];
-    const img = imgElem ? imgElem.getAttribute("src") || undefined : undefined;
+    const img = imgElem ? imgElem.outerHTML.trim() : undefined;
 
     const blurbElem = collectionElem.getElementsByTagNameNS(ns, "blurb")[0];
+
     // Use XMLSerializer to preserve any embedded HTML in <blurb>
     const blurb = blurbElem ? getInnerXML(blurbElem).trim() : undefined;
 
@@ -90,14 +90,24 @@ function buildCollectionDictionary(xmlString: string): CollectionDictionary {
   return dictionary;
 }
 
-// Build the dictionary from the imported XML content when the module loads
+// Build  dictionary from the imported XML content when the module loads
 const collectionDictionary = buildCollectionDictionary(xmlContent);
 
 /**
- * Retrieves the blurb HTML for the collection with the given contributor.
+ * Get details of given contributor.
  * @param contributor - The unique contributor name.
- * @returns The blurb HTML string, or undefined if not found.
+ * @returns A JSON object with properties "blurb" and "thumbnail" (if they contain a value).
  */
-export function getBlurbByContributor(contributor: string): string | undefined {
-  return collectionDictionary[contributor]?.blurb;
+export function getContributorDetails(contributor: string): { blurb?: string; thumbnail?: string } {
+  const collectionData = collectionDictionary[contributor];
+  if (!collectionData) return {};
+
+  const result: { blurb?: string; thumbnail?: string } = {};
+  if (collectionData.blurb && collectionData.blurb.trim() !== "") {
+    result.blurb = collectionData.blurb;
+  }
+  if (collectionData.img && collectionData.img.trim() !== "") {
+    result.thumbnail = collectionData.img;
+  }
+  return result;
 }
