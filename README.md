@@ -1,49 +1,139 @@
-# Darwin Search Results Viewer
+# Epsilon Search Result Viewer
 
-A Single File Component for [Vue.JS (v3)](https://vuejs.org/) for displaying search results from Darwin Search API.
+Epsilon Search Result Viewer is a Vue3 Single-Page Application (SPA) that displays results from the Epsilon Search API.
+
+The repository contains a separate release branch for each of Epsilon’s release environments:
+
+- `epsilon-editorial`: (editorial release)
+- `epsilon-staging`: (staging release)
+- `epsilon-production`: (production release) 
 
 ## Installation
 
-1. Clone this repository
-2. Run `npm install` at the root level of this repository
+1. **Clone the Repository:**
 
-## Testing the Search Results
+       git clone git@github.com:cambridge-collection/epsilon-search-viewer.git
+       cd epsilon-search-viewer
+       git switch epsilon-editorial # Or whatever branch you want
 
-Set the `apiURL` in `./public/searchResults.config.json` to the desired non-protected search API.
+2. **Install Dependencies:**
 
-If testing on locally indexed data, run [epsilon-solr](https://github.com/cambridge-collection/darwin-solr) and [epsilon-search](https://github.com/cambridge-collection/darwin-search) in docker on your local machine and set `apiURL` to `http://localhost`.
+       npm install
 
-To run the component locally:
+## Configuration
 
-1. Install all dependencies using `npm install`
-2. Run `npm run dev`
-3. Go to <http://localhost:5173/search>. This will return the first page of all items.
-4. Enter something into the search field and click search.
+The runtime configuration is handled via the `src/implementationConfig.ts` file. This file contains key settings that are used throughout the application, including:
 
-## Building for Deployment
+- **Debug Flag:**  
+  A boolean (`debug`) that controls whether detailed logging is output to the console to aid development and troubleshooting.
 
-The deployment is currently manual.
+- **API URL:**  
+  The `api_url` variable specifies the endpoint for the search API. When developing against a local instance of the Epsilon Solr/Epsilon Search API, it should be set to `http://localhost`. **This is currently the only way to test protected environments.**
+  
+  **When building for deployment be sure to change this `api_url` to the actual endpoint for the environment.**
+  
+- **Facets Definition:**  
+  The `facet_key` object defines the facets available for filtering search results in that environment. These will be different for the Editorial and Staging/Production instances.
+  
+  Each facet or subfacet definition includes:
 
-1. Set `apiURL` to the appropriate search api for the environment in `./public/searchResults.config.json`. **Important:** Be sure to include the `https://` or `http://` (for local deployments)
-2. Install all dependencies using `npm install`
-3. Run ` npm run build` at the root level of this repository
-4. The outputs are written to `./dist`.
-5. Upload the outputs into the `./www` directory of the environment's release bucket.
+  - The `name` of the URL parameter **[REQ]**,
+  - `count` (not currently used) **‌[REC]**
 
-At present, the `dist` bucket should only contain:
-- `search.html`
-- `assets` directory containing:
-  - A javascript file called `SearchResults` with some random hash added as a suffix (_e.g._ `SearchResults-DeJz_Pi3.js`)
-  - a subdirectory called `cdcp-searchResults` containing two css files (`search.css` & `search2.css`) and one javascript file (`search.js`)
+If the facet is contains a nested facet, the following are required **‌[REQ]**:
+  - `subfacet` contains the subfacet object of the facet
+  - `alias` contains the alias used by the subfacet. This will be usually be set to match the name of the root facet.
 
-**Do not deploy any of the outputs** if the build contains any other files or directories as this repository contains a partial selection of common assets included on the main site to make local testing easier. These resources *should* be automatically removed during the build process. They are not necessary because they are added to the bucket as part of the normal data build and release process for the TEI and Site HTML materials. 
 
-Should this directory contain additional assets, rebuilding should solve the problem.
+Example snippet from `src/implementationConfig.ts`:
 
-You may occasionally get an error that certain of these superfluous directories/resources can't be deleted towards the end of the build. This appears to be a transitory build error and is resolved simply by building the materials again.
+       /* Debug flag to control console logging */
+       const debug: boolean = true
+       
+       /* API URL for the search backend */
+       const api_url: string = 'https://epsilon-editorial-search.cudl-sandbox.net'
+       
+       /* Facet definitions for the handling and display of URL facet parameters to UI facets */
+       type Facet = {
+         name: string;
+         alias?: string;
+         count: number;
+         subfacet?: Record<string, Facet>;
+       };
+       
+       const facet_key: Record<string, Facet> = {
+         // Facet definitions go here...
+         'f1-document-type': { name: 'Document type', count: 5 },
+         'f1-author': { name: 'Author', count: 5 },
+         'f1-addressee': { name: 'Addressee', count: 5 },
+         'f1-correspondent': { name: 'Correspondent', count: 5 },
+         'f1-decade': {
+           name: 'Date', alias: 'f1-date', count: 999,
+           subfacet: {
+             'f1-decade-year': {
+               name: 'Date', count: 999,
+               subfacet: {
+                 'f1-decade-year-month': {
+                   name: 'Date', count: 999,
+                   subfacet: {
+                     'f1-decade-year-month-day': { name: 'Date', count: 999 }
+                   }
+                 }
+               }
+             }
+           }
+         },
+         'f1-repository': { name: 'Repository', count: 5 },
+              }
+              
+       export default {
+         debug,
+         api_url,
+         facet_key
+       }
 
-## Notes on implementation
+## Development
 
-The code is contained within `./src`. The Single Page Application has one route (`/search`) that is dealt with by `./src/views/SearchResults.vue`. `SearchResults.vue` incorporates a number of smaller components, contained in `./src/components/` to create the view.
+To run the application in development mode with hot-reloading:
 
+       npm run dev
+
+Once running, open your browser and navigate to `http://localhost:5173` (or the configured port) to view the application.
+
+## Build
+
+**Be sure that you change the `api_url` in `implementationConfig.ts` to the proper server before building.**
+
+To build the application for production, run:
+
+       npm run build
+
+The production-ready files will be generated in the `dist/` directory.
+
+## Project Structure
+
+       epsilon-search-viewer-epsilon-editorial/
+       ├── public/                         # Contains assets used by SPA
+       └── src/                            # Contains SPA source
+           ├── App.vue                     # Root Vue component
+           ├── main.ts                     # Application entry point
+           ├── implementationConfig.ts     # Search and configuration settings
+           ├── router/
+           │   └── index.ts               # Routing configuration
+           ├── views/
+           │   └── SearchResults.vue      # Main view for displaying search results
+           ├── components/
+           │   ├── ContributorDetails.vue # Output contributor details
+           │   ├── FacetBlock.vue         # Output facet block
+           │   ├── FacetItem.vue          # Individual facet item
+           │   ├── FacetItem.d.ts         # TypeScript declarations for facet items
+           │   ├── ResultList.vue         # List container for search 
+           │   │                            # results
+           │   ├── ResultItem.vue         # Component for a single search result
+           │   ├── NoResults.vue          # Component displayed when no results are found
+           │   └── campl-page-header.vue  # Page header component
+           └── lib/
+               └── collections.ts          # Get Contributor data
+               └── utils.ts                # Utility functions used
+                                             # throughout the application
 
