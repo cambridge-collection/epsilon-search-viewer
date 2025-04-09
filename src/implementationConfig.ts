@@ -10,7 +10,7 @@ const debug: boolean = true
 /* URL to the search API
    PROD: https://epsilon-editorial-search.cudl-sandbox.net
 */
-const api_url: string = 'https://epsilon-editorial-search.cudl-sandbox.net'
+const api_url: string = 'https://epsilon-staging-search.cudl-sandbox.net'
 
 type Facet = {
   name: string;
@@ -60,8 +60,7 @@ const desired_facets: string[] = ['f1-author',
   'f1-document-type',
   'f1-repository',
   'f1-contributor',
-  'f1-transcription-available',
-  'f1-cdl-images-linked']
+  'f1-transcription-available']
 
 /* Facets that are expandable */
 const expandable: string[] = [
