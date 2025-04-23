@@ -10,7 +10,7 @@ const debug: boolean = true
 /* URL to the search API
    PROD: https://epsilon-editorial-search.cudl-sandbox.net
 */
-const api_url: string = 'https://epsilon-staging-search.cudl-sandbox.net'
+const api_url: string = 'https://staging-search.epsilon.ac.uk'
 
 type Facet = {
   name: string;
