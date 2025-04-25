@@ -5,7 +5,7 @@ import { _params_to_query_structure } from '@/lib/utils'
 
 
 /* Boolean toggle controlling whether _tracer_bullet should output to console log */
-const debug: boolean = true
+const debug: boolean = false
 
 /* URL to the search API
    PROD: https://epsilon-editorial-search.cudl-sandbox.net
