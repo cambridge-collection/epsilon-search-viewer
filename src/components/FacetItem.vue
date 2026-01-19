@@ -78,17 +78,19 @@ const name = computed(() => {
 <template>
   <li class="list-group-item facet-item">
     <router-link
-      :to="{ name: 'search', query: cancel_link(facet_name, facet.val, params) }" class="d-flex justify-content-between align-items-center"
+      :to="{ name: 'search', query: cancel_link(facet_name, facet.val, params) }"
+      class="d-flex justify-content-between align-items-center"
       v-if="is_selected && subgroupName"
     >
       <span class="col1 text-danger"><i class="fa fa-minus-square" aria-hidden="true"></i></span>
       <span class="col collapse2">{{ name }}</span>
-      <span class="col text-right"></span>
+      <span class="badge badge-info badge-pill">({{ props.facet.count }})</span>
     </router-link>
 
     <router-link
-      :to="{ name: 'search', query: cancel_link(facet_name, facet.val, params) }" class="d-flex justify-content-between align-items-center"
-      v-if="is_selected && !subgroupName"
+      :to="{ name: 'search', query: cancel_link(facet_name, facet.val, params) }"
+      class="d-flex justify-content-between align-items-center"
+      v-else-if="is_selected"
     >
       <span class="col"><i>{{ name }}</i></span>
       <span class="badge text-danger"><i class="fas fa-window-close" aria-hidden="true"></i></span>
