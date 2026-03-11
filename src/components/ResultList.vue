@@ -102,7 +102,7 @@ const filtering_params_string = computed<string>(() => {
 const all_params_uri = computed<string>(() =>{
   const result_array: string[] = []
   all_params.value.forEach((item: { key: string; value: string }) => {
-    result_array.push(item.key + '=' + encodeURI(String(item.value)))
+    result_array.push(item.key + '=' + encodeURIComponent(String(item.value)))
   })
   return result_array.join('&')
 })
