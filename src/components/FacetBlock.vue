@@ -69,10 +69,7 @@ const current_facet_selections = computed<string[]>(() => props.params
             v-bind:is_subgroup="false"
             :key="JSON.stringify(facet)"
           />
-      <li class="facetLess list-group-item d-flex justify-content-between align-items-center"  v-if="is_expandable && target_facets.length >= 5">
-          <!--<router-link :to="{ name: 'search', query: unexpand_link}" class="badge badge-light badge-pill border mx-auto mt-2 mb-2" v-if="is_expanded" >
-            <i class="fas fa-angle-double-up"></i> FEWER <i class="fas fa-angle-double-up"></i>
-          </router-link>-->
+      <li class="facetLess list-group-item d-flex justify-content-between align-items-center"  v-if="is_expandable && target_facets.length >= 5 && !is_expanded">
           <router-link :to="{ name: 'search', query: expand_link}" class="badge badge-light badge-pill border mx-auto mt-2 mb-2">
             <i class="fas fa-angle-double-down"></i> MORE <i class="fas fa-angle-double-down"></i>
           </router-link>
