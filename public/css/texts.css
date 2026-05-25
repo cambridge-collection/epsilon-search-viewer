@@ -945,6 +945,10 @@ span.tab {
   padding-bottom: 1em;
   vertical-align: top; }
 
+#cudl_content_container .footnotes .footnote .note_number {
+  white-space: nowrap;
+}
+
 #cudl_content_container .footnote .note_text p:first-child {
   margin-top: 0; }
 
