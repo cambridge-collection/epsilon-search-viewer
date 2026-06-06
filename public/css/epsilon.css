@@ -362,6 +362,11 @@ div.query {
 #summary p, #sidebar dl, #contributor p {
   margin: 1em; }
 
+#licence p {
+    margin-top: 0;
+    margin-bottom: 1em;
+}
+
 #sidebar dt {
   font-weight: bold;
   margin-top: 0.5em; }
