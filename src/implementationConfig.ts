@@ -116,7 +116,7 @@ const sort_fields: string[] = ['score', 'author', 'addressee', 'date']
 /* Conditional function that will be run if it exists when first processing url parameters.
 *  It is used to tidy up URL parameters. It will likely only ever be used on former XTF sites
 *  XTF used to number facets by the order in which they were sleected by the user. You could consequently have
-*  f1-document-type=letter&f2-date=1868 AND f1-date=1868&f2-document-type
+*  f1-document-type=Letters&f2-date=1868 AND f1-date=1868&f2-document-type
 *  Both produce the same ouput but make it more difficult for crawlers to the site.
 *  This function standardises all facets to f1-{face-name}.
 */

@@ -87,8 +87,8 @@
                   <h3 class="h6">Browse</h3>
                   <ul class="list-unstyled">
                      <li><a href="/search?sort=date">All records</a></li>
-                     <li><a href="/search?f1-document-type=letter&amp;sort=date">Letters</a></li>
-                     <li><a href="/search?f1-document-type=people&amp;sort=name">People</a></li>
+                     <li><a href="/search?f1-document-type=Letters&amp;sort=date">Letters</a></li>
+                     <li><a href="/search?f1-document-type=People/Organisations&amp;sort=name">People</a></li>
                   </ul>
                </div>
                <div class="footer-group">
