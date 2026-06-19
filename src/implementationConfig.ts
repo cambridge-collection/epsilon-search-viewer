@@ -23,7 +23,7 @@ type Facet = {
    count is not used at present, but will eventually to control how many facets are displayed in unexpanded lists
 */
 const facet_key: Record<string, Facet> = {
-  'f1-document-type': { name: 'Document type', count: 5 },
+  'f1-document-type': { name: 'Record type', count: 5 },
   'f1-author': { name: 'Author', count: 5 },
   'f1-addressee': { name: 'Addressee', count: 5 },
   'f1-correspondent': { name: 'Correspondent', count: 5 },
@@ -43,7 +43,7 @@ const facet_key: Record<string, Facet> = {
       }
     }
   },
-  'f1-repository': { name: 'Repository', count: 5 },
+  'f1-repository': { name: 'Holders', count: 5 },
   'f1-contributor': { name: 'Contributor', count: 99 },
   'f1-transcription-available': { name: 'Transcription available', count: 5 },
   'f1-cdl-images-linked': { name: 'CDL images linked', count: 5 },
