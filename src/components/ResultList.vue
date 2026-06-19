@@ -5,6 +5,7 @@ import ResultItem from '@/components/ResultItem.vue';
 import FacetBlock from '@/components/FacetBlock.vue';
 import CamplPageHeader from '@/components/campl-page-header.vue';
 import NoResults from '@/components/NoResults.vue';
+import PaginationBar from '@/components/PaginationBar.vue';
 import 'vue-awesome-paginate/dist/style.css';
 import { CSpinner } from '@coreui/vue';
 import { _is_hierarchical, cancel_link, _get_first_value, _query_param_sort, _params_to_query_structure, _tracer_bullet } from '@/lib/utils';
@@ -334,19 +335,14 @@ onMounted(async () => {
         </div>
       </div>
 
-      <div :class="'row justify-content-md-center pagination-row ' + paginate_results">
-        <vue-awesome-paginate
-          :totalItems="total"
-          :itemsPerPage="items_per_page"
-          :maxPagesShown="5"
-          v-model="currentPage"
-          @click="updateURL"
-          type="link"
-          :linkUrl="'/search?page=[page]&' + all_params_uri"
-          paginationContainerClass="pagination justify-content-center"
-          paginateButtonsClass="page-link"
-        />
-      </div>
+      <PaginationBar
+        :total="total"
+        :items-per-page="items_per_page"
+        :current-page="currentPage"
+        :all-params-uri="all_params_uri"
+        :paginate-results="paginate_results"
+        @navigate="updateURL"
+      />
 <div class="row mt-3 mr-2">
     <div class="col order-2">
       <ResultItem
@@ -380,19 +376,14 @@ onMounted(async () => {
       />
   </div>
 </div>
-  <div :class="'row justify-content-md-center pagination-row ' + paginate_results">
-    <vue-awesome-paginate
-      :totalItems="total"
-      :itemsPerPage="items_per_page"
-      :maxPagesShown="5"
-      v-model="currentPage"
-      @click="updateURL"
-      type="link"
-      :linkUrl="'/search?page=[page]&' + all_params_uri"
-      paginationContainerClass="pagination justify-content-center"
-      paginateButtonsClass="page-link"
-    />
-  </div>
+  <PaginationBar
+    :total="total"
+    :items-per-page="items_per_page"
+    :current-page="currentPage"
+    :all-params-uri="all_params_uri"
+    :paginate-results="paginate_results"
+    @navigate="updateURL"
+  />
 </template>
 
 <style>
@@ -448,6 +439,34 @@ a.page-link.active-page:hover {
 
 .dcpNew .pages ul#componentContainer {
   margin-left: 0;
+}
+
+.pagination-row {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.pagination-row .pagination {
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+.pagination-compact {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.pagination-compact input {
+  width: 4em;
+  text-align: center;
+}
+
+.pagination-compact button:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .dcpNew ul#componentContainer a.active-page,
@@ -574,33 +593,12 @@ div.pages.false .pagination-container li:has(a.number-buttons) {
 }
 
 @media (max-width: 767px) {
-  li:has(a.paginate-buttons.number-buttons) {
+  .pagination-row #componentContainer {
     display: none;
   }
-  #page-content li:has(a.paginate-buttons.number-buttons.active-page) {
-    display: inherit;
-  }
 
-  /*  li:has(a.paginate-buttons.number-buttons):nth-last-child(2), li:has(a.paginate-buttons.number-buttons):nth-child(2) {
-    display: inherit;
-  }*/
-
-  .dcpNew ul#componentContainer .paginate-buttons {
-    font-size: 0.7em;
-    height: 1.5em;
-    width: 1.5em;
-    border-radius: 6px;
-    cursor: pointer;
-    background-color: rgb(240, 240, 240);
-    border: 1px solid rgb(217, 217, 217);
-    color: black;
-  }
-
-  #page-content .search-results-page .pages a {
-    margin: 0 4px 0 4px;
-    padding: 2px 7px;
-    background-color: #f8f8f8;
-    border: 1px solid #eee;
+  .pagination-compact {
+    display: flex;
   }
 }
 </style>
