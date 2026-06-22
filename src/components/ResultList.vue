@@ -71,11 +71,23 @@ const remove_unused_params = (params: Array<{ key: string; value: string }>): Ar
 const toStringArray = (val: LocationQueryValue | LocationQueryValue[] | null): string[] =>
   Array.isArray(val) ? val.filter((v): v is string => v !== null) : val !== null ? [val] : [];
 
+const tidy_facet_paramname = (key: string): string =>
+  (typeof implementationSafe._tidy_facet_paramname === 'function')
+    ? (implementationSafe._tidy_facet_paramname as (k: string) => string)(key)
+    : key;
+
+const remap_facet_value = (key: string, value: string): string =>
+  (typeof implementationSafe._remap_facet_value === 'function')
+    ? (implementationSafe._remap_facet_value as (k: string, v: string) => string)(key, value)
+    : value;
+
 const all_params = computed<Array<{ key: string; value: string }>>(() => {
   let result: { key: string; value: string }[] = []
   for (const [key, value] of Object.entries(route.query)) {
-    const tidiedKey = (typeof implementationSafe._tidy_facet_paramname === 'function') ? implementationSafe._tidy_facet_paramname?.(key): key;
-    const filteredValues = toStringArray(value).filter(val => val.trim().length > 0);
+    const tidiedKey = tidy_facet_paramname(key);
+    const filteredValues = toStringArray(value)
+      .filter(val => val.trim().length > 0)
+      .map(val => remap_facet_value(tidiedKey, val));
     if (filteredValues.length > 0) {
       add_missing_hierarchical_ancestor_values(tidiedKey, filteredValues).forEach((val: string) => result.push({ key: tidiedKey, value: val }));
     }
@@ -218,8 +230,26 @@ async function fetchData(start: number) {
   }
 }
 
+// Remaps values in place (original keys/page/order kept) so the replace can't loop or strip state.
+const canonicalise_facet_values = async (): Promise<void> => {
+  let changed = false
+  const query: Record<string, LocationQueryValue | LocationQueryValue[]> = {}
+
+  for (const [key, value] of Object.entries(route.query)) {
+    const tidiedKey = tidy_facet_paramname(key)
+    const remap = (v: LocationQueryValue): LocationQueryValue =>
+      typeof v === 'string' ? remap_facet_value(tidiedKey, v) : v
+    const newValue = Array.isArray(value) ? value.map(remap) : remap(value)
+    if (JSON.stringify(newValue) !== JSON.stringify(value)) changed = true
+    query[key] = newValue
+  }
+
+  if (changed) await router.replace({ name: 'search', query })
+}
+
 onMounted(async () => {
   window.scrollTo(0, 0)
+  await canonicalise_facet_values()
   await fetchData(currentPage.value).then(() => {
     is_loading.value = false
   })

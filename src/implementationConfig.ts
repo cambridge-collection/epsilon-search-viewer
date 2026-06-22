@@ -124,6 +124,18 @@ const _tidy_facet_paramname = (str: string) => {
   return str.replace(/^f\d+-/, 'f1-')
 }
 
+// Store the decoded form ('People/Organisations'); all_params_uri encodes values at request time.
+const legacy_facet_values: Record<string, Record<string, string>> = {
+  'f1-document-type': {
+    letter: 'Letters',
+    people: 'People/Organisations',
+    repository: 'Holders',
+  },
+}
+
+const _remap_facet_value = (key: string, value: string): string =>
+  legacy_facet_values[key]?.[value] ?? value
+
 /* Conditional function that will be run if it exists when first processing url parameters.
 *  It is used to perform more complex removals of parameters.
 *  For example, 'tc' (the param determining which solr core to use) is only necessary when searching the site pages.
@@ -196,6 +208,7 @@ export {
   expandable,
   debug,
   _tidy_facet_paramname,
+  _remap_facet_value,
   _remove_unused_params,
   tab_class,
   tab_href
