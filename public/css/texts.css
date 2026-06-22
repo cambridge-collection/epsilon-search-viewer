@@ -11,6 +11,10 @@ label, input, button, select, textarea {
   font-family: verdana, arial, sans-serif;
   background: #f9f9f9; }
 
+.navbar label, .navbar input, .navbar button, .navbar select, .navbar textarea {
+  margin: 0;
+  font-family: inherit; }
+
 span.leftAngle {
   margin-left: -.5em; }
 
