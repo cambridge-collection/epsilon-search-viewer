@@ -550,10 +550,12 @@ u, .underline {
 /*.nav-item {font-size:0.9rem}*/
 .navbar-brand {
   border: 1px none #AAA;
-  border-right-style: solid; }
+  border-right-style: solid;
+  padding-right: 0.5rem; }
 
 .navbar .nav-item {
-  padding-top: 0.3125rem; }
+  padding-top: 0.3125rem;
+  padding-right: 1rem; }
 
 .navbar .nav-item.navbar-brand {
   padding-top: 0.15rem; }
