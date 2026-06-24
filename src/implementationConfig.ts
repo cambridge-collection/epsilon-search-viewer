@@ -23,7 +23,7 @@ type Facet = {
    count is not used at present, but will eventually to control how many facets are displayed in unexpanded lists
 */
 const facet_key: Record<string, Facet> = {
-  'f1-document-type': { name: 'Document type', count: 5 },
+  'f1-document-type': { name: 'Record type', count: 5 },
   'f1-author': { name: 'Author', count: 5 },
   'f1-addressee': { name: 'Addressee', count: 5 },
   'f1-correspondent': { name: 'Correspondent', count: 5 },
@@ -43,7 +43,7 @@ const facet_key: Record<string, Facet> = {
       }
     }
   },
-  'f1-repository': { name: 'Repository', count: 5 },
+  'f1-repository': { name: 'Holders', count: 5 },
   'f1-contributor': { name: 'Contributor', count: 99 },
   'f1-transcription-available': { name: 'Transcription available', count: 5 },
   'f1-cdl-images-linked': { name: 'CDL images linked', count: 5 },
@@ -115,13 +115,25 @@ const sort_fields: string[] = ['score', 'author', 'addressee', 'date']
 /* Conditional function that will be run if it exists when first processing url parameters.
 *  It is used to tidy up URL parameters. It will likely only ever be used on former XTF sites
 *  XTF used to number facets by the order in which they were sleected by the user. You could consequently have
-*  f1-document-type=letter&f2-date=1868 AND f1-date=1868&f2-document-type
+*  f1-document-type=Letters&f2-date=1868 AND f1-date=1868&f2-document-type
 *  Both produce the same ouput but make it more difficult for crawlers to the site.
 *  This function standardises all facets to f1-{face-name}.
 */
 const _tidy_facet_paramname = (str: string) => {
   return str.replace(/^f\d+-/, 'f1-')
 }
+
+// Store the decoded form ('People/Organisations'); all_params_uri encodes values at request time.
+const legacy_facet_values: Record<string, Record<string, string>> = {
+  'f1-document-type': {
+    letter: 'Letters',
+    people: 'People/Organisations',
+    repository: 'Holders',
+  },
+}
+
+const _remap_facet_value = (key: string, value: string): string =>
+  legacy_facet_values[key]?.[value] ?? value
 
 /* Conditional function that will be run if it exists when first processing url parameters.
 *  It is used to perform more complex removals of parameters.
@@ -195,6 +207,7 @@ export {
   expandable,
   debug,
   _tidy_facet_paramname,
+  _remap_facet_value,
   _remove_unused_params,
   tab_class,
   tab_href

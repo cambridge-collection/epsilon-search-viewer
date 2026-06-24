@@ -1,37 +1,53 @@
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { ref } from 'vue'
 
-const props = defineProps({
+defineProps({
   keywords: { type: String, required: true },
 })
 
+const menuOpen = ref(false)
 </script>
 
 <template>
   <div
-    class="navbar navbar-dark navbar-expand bg-info justify-content-between text-light mb-4 shadow">
-    <div class="container-fluid">
-      <ul class="navbar-nav">
-        <li class="nav-item navbar-brand"><a class="nav-link" href="/">Ɛpsilon</a></li>
-        <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-        <li class="nav-item"><a class="nav-link"
-                                href="/search?browse-all=yes&amp;sort=date">Browse
-          All</a></li>
-      </ul>
-      <ul class="navbar-nav">
-        <li class="nav-item"><form class="search-widget" method="get"
-                                   action="/search"><div
-          class="form-row d-flex justify-content-end">
-          <div class="col-3">
-            <input class="form-control form-control" type="text"
-                   name="keyword" size="70" :value="keywords" />
+    class="navbar navbar-dark navbar-expand bg-info text-light mb-4 shadow">
+    <div class="container-fluid header-bar">
+      <div class="header-row">
+        <a class="navbar-brand" href="/">Ɛpsilon</a>
+
+        <button class="menu-toggler" type="button"
+                @click="menuOpen = !menuOpen" :aria-expanded="menuOpen"
+                aria-label="Toggle menu">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <ul class="navbar-nav menu-nav" :class="{ 'is-open': menuOpen }">
+          <li class="nav-item"><a class="nav-link"
+                                  href="/search?f1-document-type=Letters&amp;sort=date">Letters</a></li>
+          <li class="nav-item"><a class="nav-link"
+                                  href="/search?f1-document-type=People%2FOrganisations">People/Organisations</a></li>
+          <li class="nav-item"><a class="nav-link"
+                                  href="/search?sort=date">All records</a></li>
+          <li class="nav-item"><a class="nav-link"
+                                  href="/contributing-your-collection">Contributing your collection</a></li>
+        </ul>
+      </div>
+
+      <ul class="navbar-nav search-nav" :class="{ 'is-open': menuOpen }">
+        <li class="nav-item">
+          <form class="search-widget" method="get" action="/search">
+            <div class="input-group">
+              <div class="input-group-prepend">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+              </div>
+              <input class="form-control" type="text" name="keyword"
+                     placeholder="Search records..." :value="keywords" />
+            </div>
             <p class="text-small text-muted text-center"><a class="nav-link"
                                                             href="/advanced-search"
             >Advanced Search</a></p>
-          </div>
-          <input class="col-auto btn btn-light btn-sm" type="submit"
-                 value="Search" />
-        </div></form></li>
+          </form>
+        </li>
       </ul>
     </div>
   </div>

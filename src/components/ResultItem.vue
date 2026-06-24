@@ -1,18 +1,27 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
-defineProps({
+const props = defineProps({
   item: { type: Object, required: true },
   currentPage: { type: Number, required: true },
   index: { type: Number, required: true },
+})
+
+const type_class = computed(() => {
+  switch (props.item['facet-document-type']) {
+    case 'Letters': return 'letter'
+    case 'People/Organisations': return 'people'
+    case 'Holders': return 'repository'
+    default: return props.item['facet-document-type']
+  }
 })
 
 const show_snippets = ref(false)
 </script>
 
 <template>
-  <div :id="'main_' + index" :class="item['facet-document-type'] + ' docHit border mb-4 ml-2 row'">
-    <div class="ribbon released" v-if="item['facet-document-type'] == 'letter' && item['facet-transcription-available'] =='Yes'"><span>Text Online</span></div>
+  <div :id="'main_' + index" :class="type_class + ' docHit border mb-4 ml-2 row'">
+    <div class="ribbon released" v-if="item['facet-document-type'] == 'Letters' && item['facet-transcription-available'] =='Yes'"><span>Text Online</span></div>
     <div class="col-9">
       <div class="row">
         <div class="col docTitle">
@@ -21,14 +30,14 @@ const show_snippets = ref(false)
               <span v-if="item['facet-document-type'] == 'site'">
                 {{ item.title }}
               </span>
-              <span v-else-if="item['facet-document-type'] == 'people'">
+              <span v-else-if="item['facet-document-type'] == 'People/Organisations'">
                 {{ item['display-name'].join('; ') }}
               </span>
               <span v-else>{{ item['document-id'] }}</span></a>
           </h4>
         </div>
       </div>
-      <div v-if="item['facet-document-type'] == 'letter'">
+      <div v-if="item['facet-document-type'] == 'Letters'">
         <div class="row">
           <div class="col-3 text-right"><b>From:</b></div><div class="col">{{ item['search-author'].join('; ') }}</div>
         </div>
@@ -43,7 +52,7 @@ const show_snippets = ref(false)
         </div>
 
       </div>
-      <div v-else-if="item['facet-document-type'] == 'people'">
+      <div v-else-if="item['facet-document-type'] == 'People/Organisations'">
         <div class="row" v-if="item['search-dates']">
           <div class="col-3 text-right"><b>Date:</b></div><div class="col">{{ item['search-dates'].join('; ') }}</div>
         </div>
@@ -51,7 +60,7 @@ const show_snippets = ref(false)
           <div class="col-3 text-right"><b>Record ID:</b></div><div class="col">{{ item['document-id'] }}</div>
         </div>
       </div>
-      <div class="row summary_row" v-if="item['content_summary'] && item['facet-document-type'] == 'letter'">
+      <div class="row summary_row" v-if="item['content_summary'] && item['facet-document-type'] == 'Letters'">
         <div class="col-3 text-right"><b>Summary:</b></div><div class="col" v-html="item['content_summary']"></div>
       </div>
       <div class="row" v-if="item['contributor']">

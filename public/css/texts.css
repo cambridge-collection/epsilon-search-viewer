@@ -11,6 +11,10 @@ label, input, button, select, textarea {
   font-family: verdana, arial, sans-serif;
   background: #f9f9f9; }
 
+.navbar label, .navbar input, .navbar button, .navbar select, .navbar textarea {
+  margin: 0;
+  font-family: inherit; }
+
 span.leftAngle {
   margin-left: -.5em; }
 
@@ -454,7 +458,12 @@ ol.results {
 .results tr, .results td {
   border: none;
   vertical-align: top;
-  padding-bottom: 0; }
+  padding-bottom: 0; 
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+}
 
 /*.results table tr:nth-child(1) {background: #F5F0E6; text-align:center}*/
 td.label {
@@ -800,9 +809,14 @@ span.tab {
   padding: 0 0.25em;
   display: table-row; }
 
-#cudl_content_container td, #cudl_content_container .td {
+#cudl_content_container td, #cudl_content_container .td, #cudl_content_container th, #cudl_content_container .th {
   padding: 0 0.25em;
-  display: table-cell; }
+  display: table-cell;
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+ }
   
 #cudl_content_container table.snippet_container {
   width:100%;
@@ -944,6 +958,10 @@ span.tab {
 #cudl_content_container .footnotes .footnote > div, #cudl_content_container #tnotes .tnote_content {
   padding-bottom: 1em;
   vertical-align: top; }
+
+#cudl_content_container .footnotes .footnote .note_number {
+  white-space: nowrap;
+}
 
 #cudl_content_container .footnote .note_text p:first-child {
   margin-top: 0; }
