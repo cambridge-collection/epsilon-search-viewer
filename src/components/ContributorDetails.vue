@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, defineProps } from 'vue';
+import { ref, computed } from 'vue';
 import { getContributorDetails } from '@/lib/collections';
 
 const props = defineProps({
