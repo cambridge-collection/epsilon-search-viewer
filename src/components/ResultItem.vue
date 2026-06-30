@@ -47,8 +47,8 @@ const show_snippets = ref(false)
         <div class="row">
           <div class="col-3 text-right"><b>Date:</b></div><div class="col">{{ item.displayDate }}</div>
         </div>
-        <div class="row">
-          <div class="col-3 text-right"><b>Source of text:</b></div><div class="col">{{ item['search-classmark'] }}</div>
+        <div class="row source_row">
+          <div class="col-3 text-right"><b>Source of text:</b></div><div class="col" v-html="item['content_letter-source']"></div>
         </div>
 
       </div>
@@ -121,6 +121,14 @@ const show_snippets = ref(false)
 
 <style>
 .summary_row p {
+  margin: 0;
+}
+.source_row > .col > div {
+  display: inline;
+  margin: 0;
+  padding: 0;
+}
+.source_row > .col p {
   margin: 0;
 }
 .docHit .snippet_container {
