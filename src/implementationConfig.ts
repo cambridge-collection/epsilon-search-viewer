@@ -102,8 +102,9 @@ const params_to_remove: string[] = ['start', 'page', 'tab', 'smode', 'text-exclu
 *
 *  'sort' will be removed if this function is not defined in the implementation file
 *  'tc' is removed because it is the param determining which solr core to search
+*  'expand' is removed because it only controls how many values a facet lists
 */
-const non_filtering_keys: string[] = ['tc', 'sort']
+const non_filtering_keys: string[] = ['tc', 'sort', 'expand']
 
 /* Define the sort fields
 *  Used to create the sort dropdown
