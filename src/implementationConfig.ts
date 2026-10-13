@@ -1,6 +1,3 @@
-import { stringifyQuery } from 'vue-router'
-import { _params_to_query_structure } from '@/lib/utils'
-
 /* Define implementation settings */
 
 
@@ -137,18 +134,17 @@ const collection_options: string[] = [
 *  site.
 *
 */
-const params_to_remove: string[] = ['start', 'page', 'tab', 'smode', 'text-exclude']
+const params_to_remove: string[] = ['start', 'page', 'tab', 'smode', 'text-exclude', 'tc']
 
 /* Conditional function that will be run if it exists when creating the array containing all params that reflect the
 *  choices the user has made to filter the data. It is used to display these choices to the user at the top of the
 *  search results (ie. in pills/options that can be cancelled).
 *
 *  'sort' will be removed if this function is not defined in the implementation file
-*  'tc' is removed because it is the param determining which solr core to search
 *  'expand' is removed because it only controls how many values a facet lists
 *  'collection-join' is removed because cancelling it on its own would AND the selected collections together
 */
-const non_filtering_keys: string[] = ['tc', 'sort', 'expand', 'collection-join']
+const non_filtering_keys: string[] = ['sort', 'expand', 'collection-join']
 
 /* Define the sort fields
 *  Used to create the sort dropdown
@@ -186,10 +182,6 @@ const date_value_keys: string[] = ['year', 'month', 'day', 'year-max', 'month-ma
 /* Conditional function that will be run if it exists when first processing url parameters, and by cancel_link on the
 *  params left once a param has been cancelled.
 *  It is used to perform more complex removals of parameters.
-*  For example, 'tc' (the param determining which solr core to use) is only necessary when searching the site pages.
-*  This function consequently removes it when searching 'items'.
-*  Similarly, search-date-type is a parameter that defaults to 'on' when performing an advanced search. However, it's
-*  only actually used when some temporal parameters are set.
 */
 const _remove_unused_params = (params: Array<{ key: string; value: string }>): Array<{
   key: string;
@@ -209,8 +201,6 @@ const _remove_unused_params = (params: Array<{ key: string; value: string }>): A
     newParams = newParams.filter(item => item.key !== 'sectionType');
   }
 
-  // Remove param for core if it's the main tei core. That's the default
-  newParams = newParams.filter(item => !(item.key === 'tc' && item.value === 'items'))
   return newParams
 }
 
@@ -269,37 +259,6 @@ const _cancel_dependent_params = (key: string, params: Array<{ key: string; valu
   return remaining
 }
 
-/* Darwin specific functions used in the view
-   They control the styling and url of the 'Letters, People and References' and 'Articles' tabs based on the user's
-   query.
- */
-function tab_active(name: string, core: string): boolean {
-  return (
-    (name == 'this-site' && core === 'pages') ||
-    (name == 'cudl-results' && core !== 'pages')
-  )
-}
-
-function tab_class(name: string, core: string) {
-  const active_class = tab_active(name, core) ? 'active' : null
-  return [name, active_class].join(' ')
-}
-
-function tab_href(name: string, core: string, all_params: { key: string; value: string }[]) {
-  let path = tab_active(name, core) ? '#' : '/search?'
-  const params = all_params.filter(item => item.key === 'keyword')
-  params.push({ key: 'page', value: '1' })
-
-  if (name === 'this-site') {
-    params.push({ key: 'tc', value: 'pages' })
-  }
-
-  if (!tab_active(name, core)) {
-    path += stringifyQuery(_params_to_query_structure(params))
-  }
-  return path
-}
-
 export {
   api_url,
   desired_facets,
@@ -319,6 +278,4 @@ export {
   _remove_unused_params,
   date_param_order,
   _cancel_dependent_params,
-  tab_class,
-  tab_href
 }

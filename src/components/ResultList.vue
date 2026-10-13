@@ -27,7 +27,6 @@ const items_per_page = 20
 const total = ref<number>(0);
 const currentPage = ref<number>(get_current_page());
 
-const core = computed<'pages' | 'items'>(() => _get_first_value(route.query?.tc ?? null) === 'pages' ? 'pages' : 'items' )
 const sort = computed<string>(() => {
   const sort_val: string = _get_first_value(route.query.sort) ?? 'score'
   return implementation.sort_fields.includes(sort_val)? sort_val : 'score'
@@ -168,7 +167,7 @@ async function fetchData(start: number) {
     control_params.push('page=' + start)
   }
 
-  const url = implementation.api_url + '/' + core.value + '?' + all_params_uri.value + '&' + control_params.join('&')
+  const url = implementation.api_url + '/items?' + all_params_uri.value + '&' + control_params.join('&')
   _tracer_bullet("Trying " + url)
 
   try {
@@ -266,10 +265,10 @@ watch(
   <campl-page-header :keywords="keyword_string" :key="keyword_string" />
   <div class="resultsHeader container-fluid">
 
-    <div class="row darwin-search-results" v-show="is_loading">
+    <div class="row" v-show="is_loading">
               <CSpinner />
     </div>
-    <div class="row darwin-search-results" v-if="is_error['bool']">
+    <div class="row" v-if="is_error['bool']">
       <p>
         I'm sorry, I'm unable to complete your request ({{
           is_error['message']
