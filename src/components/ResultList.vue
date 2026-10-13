@@ -392,7 +392,7 @@ watch(
   </div>
 </div>
   <PaginationBar
-    v-show="!is_loading && !is_error['bool']"
+    v-show="!is_loading && !is_error['bool'] && total >= 1"
     :total="total"
     :items-per-page="items_per_page"
     :current-page="currentPage"
