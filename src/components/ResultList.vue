@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import { ref, computed, watch } from 'vue';
-import { useRouter, useRoute, stringifyQuery, type LocationQueryRaw, type LocationQueryValue } from 'vue-router'
+import { useRouter, useRoute, type LocationQueryRaw, type LocationQueryValue } from 'vue-router'
 import ResultItem from '@/components/ResultItem.vue';
 import FacetBlock from '@/components/FacetBlock.vue';
+import AdvancedSearch from '@/components/AdvancedSearch.vue';
 import CamplPageHeader from '@/components/campl-page-header.vue';
 import NoResults from '@/components/NoResults.vue';
 import PaginationBar from '@/components/PaginationBar.vue';
@@ -121,19 +122,6 @@ const keyword_string = computed<string>(() => {
   return all_params.value.filter(item => item.key === 'keyword')
       .map(item => item.value)
       .join(' ')
-})
-
-const advanced_query_string = computed<string>(() => {
-  const result: Record<string, string[]> = {}
-    all_params.value.filter(item => implementation.advanced_params.includes(item.key)).forEach((item) => {
-      if (result[item.key]) {
-        result[item.key].push(item.value);
-      } else {
-        result[item.key] = [item.value];
-      }
-    });
-
-  return stringifyQuery(result)
 })
 
 function get_facet_header(str: string) {
@@ -327,11 +315,6 @@ watch(
                   </div>
                 </div>
               </div>
-            <!--<div class="mt-2 small">
-              <a
-                href="https://epsilon.ac.uk/search?keyword=water&amp;f1-correspondent=Faraday%2C%20Michael&amp;f1-document-type=letter&amp;f1-date=1860-1869%3A%3A1861&amp;smode=embedded-modify"
-              >Modify Search</a>
-            </div>-->
 
         </div>
       </div>
@@ -370,6 +353,8 @@ watch(
     </div>
   <div class="col-md-4 order-2 order-md-1 col-12 mt-3 mt-md-0">
 
+          <AdvancedSearch :params="all_params" />
+
           <div class="facet">
 
               <facet-block
@@ -386,7 +371,7 @@ watch(
       </div>
     </div>
       <NoResults
-        :keyword="keyword_string"
+        :params="all_params"
         v-else-if="total === 0"
       />
   </div>
@@ -493,16 +478,6 @@ a.page-link.active-page:hover {
 }
 
 
-
-#page-content .modify_advanced a,
-#page-content .modify_advanced a:visited {
-  color: #fff;
-  background-color: #4b701c;
-  padding: 3px 12px;
-  border-radius: 24px;
-  margin-top: 10px;
-  box-shadow: rgba(0, 0, 0, 0.27) 1px 1px 5px;
-}
 
 #page-content .search-results-page .search-result-item h2 a {
   color: #111;

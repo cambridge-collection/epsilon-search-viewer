@@ -1,6 +1,8 @@
 import * as implementation from '@/implementationConfig'
 import { computed } from 'vue'
 
+const implementationSafe = implementation as Record<string, unknown>
+
 type Facet = {
   name: string;
   count: number;
@@ -125,10 +127,16 @@ const cancel_link = (keyToRemove: string, valueToRemove: string, all_params: { k
 
     return !shouldRemove
   });
-  // Remove date children.
 
+  let remainingArr = typeof implementationSafe._cancel_dependent_params === 'function'
+    ? implementationSafe._cancel_dependent_params(keyToRemove, filteredArr)
+    : filteredArr
 
-  return _params_to_query_structure(filteredArr);
+  if (typeof implementationSafe._remove_unused_params === 'function') {
+    remainingArr = implementationSafe._remove_unused_params(remainingArr)
+  }
+
+  return _params_to_query_structure(remainingArr);
 };
 
 function _is_equal_to(variable: string | string[] | null, targetValue: string): boolean {
@@ -164,8 +172,10 @@ const _facet_display_name = (paramKey: string, facets: Record<string, Facet> = i
 function _query_param_sort(key: string) {
   /* Sort facet params by facet title (if facet) or param name (if search term).
      Search terms are prefixed with 000_ to ensure they come first in the search
-     terms display
+     terms display. Date params follow them as a group, in their configured order.
    */
+  const date_index = implementation.date_param_order?.indexOf(key) ?? -1
+  if (date_index >= 0) return "001_" + date_index
   return _facet_display_name(key) ?? "000_"+key
 }
 
