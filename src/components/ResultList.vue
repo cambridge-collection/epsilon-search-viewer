@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue';
-import { useRouter, useRoute, stringifyQuery, type LocationQueryValue } from 'vue-router'
+import { useRouter, useRoute, stringifyQuery, type LocationQueryRaw, type LocationQueryValue } from 'vue-router'
 import ResultItem from '@/components/ResultItem.vue';
 import FacetBlock from '@/components/FacetBlock.vue';
 import CamplPageHeader from '@/components/campl-page-header.vue';
@@ -160,6 +160,16 @@ const updateURL = async (page: number): Promise<void> => {
   })
 }
 
+function onSort(e: Event): void {
+  const q: LocationQueryRaw = { ...route.query }
+  for (const k of implementation.params_to_remove) delete q[k]
+  const value = (e.target as HTMLSelectElement).value
+  if (value === 'score') delete q.sort
+  else q.sort = value
+  q.page = 1
+  router.push({ name: 'search', query: q })
+}
+
 async function fetchData(start: number) {
   commits.value = []
   const control_params = []
@@ -294,51 +304,21 @@ onMounted(async () => {
         </div>
         <div class="col-auto text-right">
 
-              <form method="get" action="/search" v-show="total >= 1">
+              <div v-show="total >= 1">
                 <div class="form-row d-inline-flex">
                   <div class="col-auto">
                     <b>Sorted by:</b>
                   </div>
                   <div class="col-auto">
-                    <select class="form-control form-control-sm" size="1" name="sort">
-                  <option
-                    value="score"
-                    :selected="sort == 'score'"
-                  >
-                    relevance
-                  </option>
-                  <option
-                    value="author"
-                    :selected="sort == 'author'"
-                  >
-                    author
-                  </option>
-                  <option
-                    value="addressee"
-                    :selected="sort == 'addressee'"
-                  >
-                    addressee
-                  </option>
-                  <option
-                    value="date"
-                    :selected="sort == 'date'"
-                  >
-                    date
-                  </option>
-                </select>
+                    <select class="form-control form-control-sm" size="1" name="sort" :value="sort" @change="onSort">
+                      <option value="score">relevance</option>
+                      <option value="author">author</option>
+                      <option value="addressee">addressee</option>
+                      <option value="date">date</option>
+                    </select>
                   </div>
-                <input
-                  v-for="obj in filtering_params"
-                  type="hidden"
-                  :name="String(obj.key)"
-                  :value="obj.value"
-                  :key="obj.key + obj.value"
-                />
-                <input type="hidden" name="page" value="1" />
-                &nbsp;<input class="btn btn-info btn-sm" type="submit" value="Go!" />
-
-            </div>
-              </form>
+                </div>
+              </div>
             <!--<div class="mt-2 small">
               <a
                 href="https://epsilon.ac.uk/search?keyword=water&amp;f1-correspondent=Faraday%2C%20Michael&amp;f1-document-type=letter&amp;f1-date=1860-1869%3A%3A1861&amp;smode=embedded-modify"
