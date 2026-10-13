@@ -8,7 +8,7 @@ import NoResults from '@/components/NoResults.vue';
 import PaginationBar from '@/components/PaginationBar.vue';
 import 'vue-awesome-paginate/dist/style.css';
 import { CSpinner } from '@coreui/vue';
-import { _is_hierarchical, cancel_link, _get_first_value, _query_param_sort, _params_to_query_structure, _tracer_bullet } from '@/lib/utils';
+import { _is_hierarchical, cancel_link, _get_first_value, _facet_display_name, _query_param_sort, _params_to_query_structure, _tracer_bullet } from '@/lib/utils';
 import ContributorDetails from '@/components/ContributorDetails.vue';
 import * as implementation from '@/implementationConfig'
 
@@ -141,7 +141,7 @@ const advanced_query_string = computed<string>(() => {
 })
 
 function get_facet_header(str: string) {
-  return (str in implementation.facet_key ) ? implementation.facet_key[str]['name']: str
+  return _facet_display_name(str) ?? str
 }
 
 function throw_error(error: string) {

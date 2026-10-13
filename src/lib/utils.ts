@@ -147,16 +147,30 @@ function _get_first_value(param: unknown): string | null {
   return result
 }
 
+const _facet_display_name = (paramKey: string, facets: Record<string, Facet> = implementation.facet_key): string | null => {
+  for (const key in facets) {
+    const facet = facets[key];
+    if (key === paramKey || facet.alias === paramKey) {
+      return facet.name;
+    }
+    if (facet.subfacet) {
+      const found = _facet_display_name(paramKey, facet.subfacet);
+      if (found) return found;
+    }
+  }
+  return null;
+};
+
 function _query_param_sort(key: string) {
   /* Sort facet params by facet title (if facet) or param name (if search term).
      Search terms are prefixed with 000_ to ensure they come first in the search
      terms display
    */
-  return (key in implementation.facet_key) ? implementation.facet_key[key].name : "000_"+key
+  return _facet_display_name(key) ?? "000_"+key
 }
 
 function _tracer_bullet(msg: string): void {
   if (implementation.debug) { console.log(msg)}
 }
 
-export { _bucket_to_param_name, _get_subfacet_bucket_name, _find_facet_hierarchy, _is_hierarchical, _params_to_query_structure, cancel_link, _is_equal_to, _get_first_value, _query_param_sort, _tracer_bullet};
+export { _bucket_to_param_name, _get_subfacet_bucket_name, _find_facet_hierarchy, _is_hierarchical, _params_to_query_structure, cancel_link, _is_equal_to, _get_first_value, _facet_display_name, _query_param_sort, _tracer_bullet};
