@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRouter, useRoute, stringifyQuery, type LocationQueryRaw, type LocationQueryValue } from 'vue-router'
 import ResultItem from '@/components/ResultItem.vue';
 import FacetBlock from '@/components/FacetBlock.vue';
@@ -108,10 +108,6 @@ const filtering_params = computed<Array<{ key: string; value: string }>>(() => {
   return all_params.value.filter(item => !keysToDelete.includes(item.key))
 })
 
-const filtering_params_string = computed<string>(() => {
-  return JSON.stringify(filtering_params.value)
-})
-
 const all_params_uri = computed<string>(() =>{
   const result_array: string[] = []
   all_params.value.forEach((item: { key: string; value: string }) => {
@@ -144,6 +140,10 @@ function get_facet_header(str: string) {
   return _facet_display_name(str) ?? str
 }
 
+// The view is reused across navigations, so a slow response can outlive the query
+// that asked for it; only the newest request may touch state.
+let request_id = 0
+
 function throw_error(error: string) {
   is_error.value['bool'] = true
   is_error.value['message'] = error
@@ -171,6 +171,9 @@ function onSort(e: Event): void {
 }
 
 async function fetchData(start: number) {
+  const request = ++request_id
+  is_loading.value = true
+  is_error.value = { bool: false, message: "" }
   commits.value = []
   const control_params = []
   if (start) {
@@ -192,6 +195,7 @@ async function fetchData(start: number) {
     }
 
     const data = await response.json();
+    if (request !== request_id) return;
     _tracer_bullet(data);
 
     // Handle highlighting if present
@@ -209,39 +213,38 @@ async function fetchData(start: number) {
       }
     }
 
-    if (!is_error.value.bool) {
-      commits.value = data.response.docs;
-      total.value = data.response.numFound;
+    commits.value = data.response.docs;
+    total.value = data.response.numFound;
 
-      // Clean and format facets
-      const facetDetails = Object.entries(data.facet_counts.facet_fields) as [string, (string | number)[]][];
+    // Clean and format facets
+    const facetDetails = Object.entries(data.facet_counts.facet_fields) as [string, (string | number)[]][];
 
-      const facetsCleaned = facetDetails.reduce(
-        (
-          acc: Record<string, { val: string; count: number }[]>,
-          [facetName, facetPairs]: [string, (string | number)[]]
-        ) => {
-          acc[facetName] = [];
-          for (let i = 0; i < facetPairs.length; i += 2) {
-            acc[facetName].push({
-              val: facetPairs[i] as string,
-              count: facetPairs[i + 1] as number,
-            });
-          }
-          return acc;
-        },
-        {} as Record<string, { val: string; count: number }[]>
-      );
+    const facetsCleaned = facetDetails.reduce(
+      (
+        acc: Record<string, { val: string; count: number }[]>,
+        [facetName, facetPairs]: [string, (string | number)[]]
+      ) => {
+        acc[facetName] = [];
+        for (let i = 0; i < facetPairs.length; i += 2) {
+          acc[facetName].push({
+            val: facetPairs[i] as string,
+            count: facetPairs[i + 1] as number,
+          });
+        }
+        return acc;
+      },
+      {} as Record<string, { val: string; count: number }[]>
+    );
 
-      facets.value = facetsCleaned;
-    }
+    facets.value = facetsCleaned;
+    is_loading.value = false
   } catch (error) {
-    throw_error(error instanceof Error ? error.message : String(error));
+    if (request === request_id) throw_error(error instanceof Error ? error.message : String(error));
   }
 }
 
 // Remaps values in place (original keys/page/order kept) so the replace can't loop or strip state.
-const canonicalise_facet_values = async (): Promise<void> => {
+const canonicalise_facet_values = async (): Promise<boolean> => {
   let changed = false
   const query: Record<string, LocationQueryValue | LocationQueryValue[]> = {}
 
@@ -255,15 +258,20 @@ const canonicalise_facet_values = async (): Promise<void> => {
   }
 
   if (changed) await router.replace({ name: 'search', query })
+  return changed
 }
 
-onMounted(async () => {
-  window.scrollTo(0, 0)
-  await canonicalise_facet_values()
-  await fetchData(currentPage.value).then(() => {
-    is_loading.value = false
-  })
-})
+watch(
+  () => route.fullPath,
+  async () => {
+    currentPage.value = get_current_page()
+    window.scrollTo(0, 0)
+    // A replace re-triggers this watcher, which fetches for the canonical URL.
+    if (await canonicalise_facet_values()) return
+    await fetchData(currentPage.value)
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -281,7 +289,7 @@ onMounted(async () => {
       </p>
       <p>Please try again in a few minutes</p>
     </div>
-    <div v-show="!is_loading && !is_error['bool']" :key="route.fullPath">
+    <div v-show="!is_loading && !is_error['bool']">
       <div class="row">
         <div class="col">
           <div class="row">
@@ -370,7 +378,7 @@ onMounted(async () => {
                 :facets="facets"
                 :facet_key="implementation.facet_key"
                 :params="all_params"
-                :key="filtering_params_string+'::'+facet"
+                :key="facet"
               />
 
           </div>
@@ -384,6 +392,7 @@ onMounted(async () => {
   </div>
 </div>
   <PaginationBar
+    v-show="!is_loading && !is_error['bool']"
     :total="total"
     :items-per-page="items_per_page"
     :current-page="currentPage"

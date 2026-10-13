@@ -1,11 +1,18 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 
 defineProps({
   keywords: { type: String, required: true },
 })
 
+const route = useRoute()
+
 const menuOpen = ref(false)
+
+watch(() => route.fullPath, () => {
+  menuOpen.value = false
+})
 </script>
 
 <template>
