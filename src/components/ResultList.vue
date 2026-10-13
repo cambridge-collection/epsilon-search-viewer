@@ -301,9 +301,6 @@ onMounted(async () => {
                   </div>
                   <div class="col-auto">
                     <select class="form-control form-control-sm" size="1" name="sort">
-                  {{
-                    sort
-                  }}
                   <option
                     value="score"
                     :selected="sort == 'score'"
