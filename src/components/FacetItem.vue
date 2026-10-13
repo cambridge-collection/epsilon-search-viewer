@@ -61,17 +61,7 @@ const get_subgroup = computed(() => {
   return result
 })
 
-const name = computed(() => {
-  let value = props.facet.val.split('::').slice(-1)[0]
-  if (
-    props.param_name == 'f1-year-month' &&
-    /^(0[1-9]|1[0,1,2])$/.test(value)
-  ) {
-    const date = new Date(2009, parseInt(value) - 1, 10) // 2009-11-10
-    value = date.toLocaleString('default', { month: 'long' })
-  }
-  return value
-})
+const name = computed(() => props.facet.val.split('::').slice(-1)[0])
 
 </script>
 
