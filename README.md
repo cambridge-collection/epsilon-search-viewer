@@ -110,6 +110,8 @@ To build the application for production, run:
 
 The production-ready files will be generated in the `dist/` directory.
 
+Every asset filename under `dist/assets/` carries a content hash, so the names change whenever the corresponding source changes. Only `search.html` has a stable name. Upload each release alongside the previous one rather than replacing its contents, since a visitor who already has the page open will still request the files named by the release they loaded.
+
 ## Project Structure
 
        epsilon-search-viewer-epsilon-editorial/

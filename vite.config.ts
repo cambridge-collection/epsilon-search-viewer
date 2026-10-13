@@ -21,8 +21,8 @@ export default defineConfig({
       },
       output: {
         //dir: 'assets/cdcp-searchResults',
-        entryFileNames: 'assets/cdcp-searchResults/search.js',
-        assetFileNames: 'assets/cdcp-searchResults/search.css',
+        entryFileNames: 'assets/cdcp-searchResults/search-[hash].js',
+        assetFileNames: 'assets/cdcp-searchResults/[name]-[hash][extname]',
       },
       //external: ['/config/settings.ts'],
       plugins: [
