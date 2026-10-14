@@ -1,12 +1,20 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
-defineProps({
+const props = defineProps({
   keywords: { type: String, required: true },
 })
 
 const route = useRoute()
+const router = useRouter()
+
+const term = ref(props.keywords)
+
+function onSearch(): void {
+  const keyword = term.value.trim()
+  router.push({ name: 'search', query: keyword ? { keyword } : {} })
+}
 
 const menuOpen = ref(false)
 
@@ -42,13 +50,13 @@ watch(() => route.fullPath, () => {
 
       <ul class="navbar-nav search-nav" :class="{ 'is-open': menuOpen }">
         <li class="nav-item">
-          <form class="search-widget" method="get" action="/search">
+          <form class="search-widget" @submit.prevent="onSearch">
             <div class="input-group">
               <div class="input-group-prepend">
                 <span class="input-group-text"><i class="fas fa-search"></i></span>
               </div>
               <input class="form-control" type="text" name="keyword"
-                     placeholder="Search records..." :value="keywords" />
+                     placeholder="Search records..." v-model="term" />
             </div>
             <p class="text-small text-muted text-center"><a class="nav-link"
                                                             href="/advanced-search"
