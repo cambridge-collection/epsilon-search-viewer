@@ -128,7 +128,6 @@ Every asset filename under `dist/assets/` carries a content hash, so the names c
            │   ├── ContributorDetails.vue # Output contributor details
            │   ├── FacetBlock.vue         # Output facet block
            │   ├── FacetItem.vue          # Individual facet item
-           │   ├── FacetItem.d.ts         # TypeScript declarations for facet items
            │   ├── ResultList.vue         # List container for search 
            │   │                            # results
            │   ├── ResultItem.vue         # Component for a single search result
