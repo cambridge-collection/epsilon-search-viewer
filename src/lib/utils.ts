@@ -1,15 +1,8 @@
 import * as implementation from '@/implementationConfig'
+import type { Facet } from '@/implementationConfig'
 import { computed } from 'vue'
 
 const implementationSafe = implementation as Record<string, unknown>
-
-type Facet = {
-  name: string;
-  count: number;
-  alias?: string;
-  subfacet?: Record<string, Facet>;
-};
-
 
 /* Create lookup table to get param name from bucket_name */
 const bucket_to_param_lookup = computed<Array<{ key: string; value: string }>>((): Array<{ key: string; value: string }> => {

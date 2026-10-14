@@ -259,6 +259,8 @@ const _cancel_dependent_params = (key: string, params: Array<{ key: string; valu
   return remaining
 }
 
+export type { Facet }
+
 export {
   api_url,
   desired_facets,
