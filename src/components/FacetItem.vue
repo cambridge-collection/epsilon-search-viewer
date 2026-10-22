@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
-import escape from 'core-js/actual/regexp/escape'
 import { _bucket_to_param_name, _get_subfacet_bucket_name, _params_to_query_structure, cancel_link, _query_param_sort } from '@/lib/utils';
 import * as implementation from '@/implementationConfig'
+
+const escapeRegExp = (str: string): string => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 const props = defineProps({
   facet: { type: Object as () => { val: string; count: number }, required: true },
@@ -22,7 +23,7 @@ const is_selected = computed<boolean>(() => {
   return (current_subfacet_selections.value.some(
       (e: string) => {
         const para_val: string = String(e).replaceAll(/^"(.+?)"$/g, '$1')
-        const re = new RegExp("^"+ escape(value) +'::')
+        const re = new RegExp("^"+ escapeRegExp(value) +'::')
 
         return para_val == value || re.test(para_val)
       }
@@ -61,17 +62,7 @@ const get_subgroup = computed(() => {
   return result
 })
 
-const name = computed(() => {
-  let value = props.facet.val.split('::').slice(-1)[0]
-  if (
-    props.param_name == 'f1-year-month' &&
-    /^(0[1-9]|1[0,1,2])$/.test(value)
-  ) {
-    const date = new Date(2009, parseInt(value) - 1, 10) // 2009-11-10
-    value = date.toLocaleString('default', { month: 'long' })
-  }
-  return value
-})
+const name = computed(() => props.facet.val.split('::').slice(-1)[0])
 
 </script>
 

@@ -108,7 +108,11 @@ To build the application for production, run:
 
        npm run build
 
+The `prebuild` step runs `scripts/guard-build.mjs`, which refuses to build if `api_url` points at `localhost` or `127.0.0.1`, or doesn't use `https://`. `npm run build-only` skips this check.
+
 The production-ready files will be generated in the `dist/` directory.
+
+Every asset filename under `dist/assets/` carries a content hash, so the names change whenever the corresponding source changes. Only `search.html` has a stable name. Upload each release alongside the previous one rather than replacing its contents, since a visitor who already has the page open will still request the files named by the release they loaded.
 
 ## Project Structure
 
@@ -126,7 +130,6 @@ The production-ready files will be generated in the `dist/` directory.
            │   ├── ContributorDetails.vue # Output contributor details
            │   ├── FacetBlock.vue         # Output facet block
            │   ├── FacetItem.vue          # Individual facet item
-           │   ├── FacetItem.d.ts         # TypeScript declarations for facet items
            │   ├── ResultList.vue         # List container for search 
            │   │                            # results
            │   ├── ResultItem.vue         # Component for a single search result

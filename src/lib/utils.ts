@@ -1,13 +1,8 @@
 import * as implementation from '@/implementationConfig'
+import type { Facet } from '@/implementationConfig'
 import { computed } from 'vue'
 
-type Facet = {
-  name: string;
-  count: number;
-  alias?: string;
-  subfacet?: Record<string, Facet>;
-};
-
+const implementationSafe = implementation as Record<string, unknown>
 
 /* Create lookup table to get param name from bucket_name */
 const bucket_to_param_lookup = computed<Array<{ key: string; value: string }>>((): Array<{ key: string; value: string }> => {
@@ -125,10 +120,16 @@ const cancel_link = (keyToRemove: string, valueToRemove: string, all_params: { k
 
     return !shouldRemove
   });
-  // Remove date children.
 
+  let remainingArr = typeof implementationSafe._cancel_dependent_params === 'function'
+    ? implementationSafe._cancel_dependent_params(keyToRemove, filteredArr)
+    : filteredArr
 
-  return _params_to_query_structure(filteredArr);
+  if (typeof implementationSafe._remove_unused_params === 'function') {
+    remainingArr = implementationSafe._remove_unused_params(remainingArr)
+  }
+
+  return _params_to_query_structure(remainingArr);
 };
 
 function _is_equal_to(variable: string | string[] | null, targetValue: string): boolean {
@@ -147,16 +148,32 @@ function _get_first_value(param: unknown): string | null {
   return result
 }
 
+const _facet_display_name = (paramKey: string, facets: Record<string, Facet> = implementation.facet_key): string | null => {
+  for (const key in facets) {
+    const facet = facets[key];
+    if (key === paramKey || facet.alias === paramKey) {
+      return facet.name;
+    }
+    if (facet.subfacet) {
+      const found = _facet_display_name(paramKey, facet.subfacet);
+      if (found) return found;
+    }
+  }
+  return null;
+};
+
 function _query_param_sort(key: string) {
   /* Sort facet params by facet title (if facet) or param name (if search term).
      Search terms are prefixed with 000_ to ensure they come first in the search
-     terms display
+     terms display. Date params follow them as a group, in their configured order.
    */
-  return (key in implementation.facet_key) ? implementation.facet_key[key].name : "000_"+key
+  const date_index = implementation.date_param_order?.indexOf(key) ?? -1
+  if (date_index >= 0) return "001_" + date_index
+  return _facet_display_name(key) ?? "000_"+key
 }
 
 function _tracer_bullet(msg: string): void {
   if (implementation.debug) { console.log(msg)}
 }
 
-export { _bucket_to_param_name, _get_subfacet_bucket_name, _find_facet_hierarchy, _is_hierarchical, _params_to_query_structure, cancel_link, _is_equal_to, _get_first_value, _query_param_sort, _tracer_bullet};
+export { _bucket_to_param_name, _get_subfacet_bucket_name, _find_facet_hierarchy, _is_hierarchical, _params_to_query_structure, cancel_link, _is_equal_to, _get_first_value, _facet_display_name, _query_param_sort, _tracer_bullet};

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 const props = defineProps<{
   total: number
@@ -14,6 +14,11 @@ const emit = defineEmits<{ (e: 'navigate', page: number): void }>()
 const totalPages = computed<number>(() => Math.max(1, Math.ceil(props.total / props.itemsPerPage)))
 const modelPage = ref<number>(props.currentPage)
 const pageInput = ref<number>(props.currentPage)
+
+watch(() => props.currentPage, page => {
+  modelPage.value = page
+  pageInput.value = page
+})
 
 function navigate(page: number): void {
   emit('navigate', page)

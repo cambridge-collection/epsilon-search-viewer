@@ -1,14 +1,15 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter, useRoute, stringifyQuery, type LocationQueryValue } from 'vue-router'
+import { ref, computed, watch } from 'vue';
+import { useRouter, useRoute, type LocationQueryRaw, type LocationQueryValue } from 'vue-router'
 import ResultItem from '@/components/ResultItem.vue';
 import FacetBlock from '@/components/FacetBlock.vue';
+import AdvancedSearch from '@/components/AdvancedSearch.vue';
 import CamplPageHeader from '@/components/campl-page-header.vue';
 import NoResults from '@/components/NoResults.vue';
 import PaginationBar from '@/components/PaginationBar.vue';
 import 'vue-awesome-paginate/dist/style.css';
 import { CSpinner } from '@coreui/vue';
-import { _is_hierarchical, cancel_link, _get_first_value, _query_param_sort, _params_to_query_structure, _tracer_bullet } from '@/lib/utils';
+import { _is_hierarchical, cancel_link, _get_first_value, _facet_display_name, _query_param_sort, _params_to_query_structure, _tracer_bullet } from '@/lib/utils';
 import ContributorDetails from '@/components/ContributorDetails.vue';
 import * as implementation from '@/implementationConfig'
 
@@ -26,7 +27,6 @@ const items_per_page = 20
 const total = ref<number>(0);
 const currentPage = ref<number>(get_current_page());
 
-const core = computed<'pages' | 'items'>(() => _get_first_value(route.query?.tc ?? null) === 'pages' ? 'pages' : 'items' )
 const sort = computed<string>(() => {
   const sort_val: string = _get_first_value(route.query.sort) ?? 'score'
   return implementation.sort_fields.includes(sort_val)? sort_val : 'score'
@@ -108,10 +108,6 @@ const filtering_params = computed<Array<{ key: string; value: string }>>(() => {
   return all_params.value.filter(item => !keysToDelete.includes(item.key))
 })
 
-const filtering_params_string = computed<string>(() => {
-  return JSON.stringify(filtering_params.value)
-})
-
 const all_params_uri = computed<string>(() =>{
   const result_array: string[] = []
   all_params.value.forEach((item: { key: string; value: string }) => {
@@ -127,22 +123,13 @@ const keyword_string = computed<string>(() => {
       .join(' ')
 })
 
-const advanced_query_string = computed<string>(() => {
-  const result: Record<string, string[]> = {}
-    all_params.value.filter(item => implementation.advanced_params.includes(item.key)).forEach((item) => {
-      if (result[item.key]) {
-        result[item.key].push(item.value);
-      } else {
-        result[item.key] = [item.value];
-      }
-    });
-
-  return stringifyQuery(result)
-})
-
 function get_facet_header(str: string) {
-  return (str in implementation.facet_key ) ? implementation.facet_key[str]['name']: str
+  return _facet_display_name(str) ?? str
 }
+
+// The view is reused across navigations, so a slow response can outlive the query
+// that asked for it; only the newest request may touch state.
+let request_id = 0
 
 function throw_error(error: string) {
   is_error.value['bool'] = true
@@ -160,14 +147,27 @@ const updateURL = async (page: number): Promise<void> => {
   })
 }
 
+function onSort(e: Event): void {
+  const q: LocationQueryRaw = { ...route.query }
+  for (const k of implementation.params_to_remove) delete q[k]
+  const value = (e.target as HTMLSelectElement).value
+  if (value === 'score') delete q.sort
+  else q.sort = value
+  q.page = 1
+  router.push({ name: 'search', query: q })
+}
+
 async function fetchData(start: number) {
+  const request = ++request_id
+  is_loading.value = true
+  is_error.value = { bool: false, message: "" }
   commits.value = []
   const control_params = []
   if (start) {
     control_params.push('page=' + start)
   }
 
-  const url = implementation.api_url + '/' + core.value + '?' + all_params_uri.value + '&' + control_params.join('&')
+  const url = implementation.api_url + '/items?' + all_params_uri.value + '&' + control_params.join('&')
   _tracer_bullet("Trying " + url)
 
   try {
@@ -182,6 +182,7 @@ async function fetchData(start: number) {
     }
 
     const data = await response.json();
+    if (request !== request_id) return;
     _tracer_bullet(data);
 
     // Handle highlighting if present
@@ -199,39 +200,38 @@ async function fetchData(start: number) {
       }
     }
 
-    if (!is_error.value.bool) {
-      commits.value = data.response.docs;
-      total.value = data.response.numFound;
+    commits.value = data.response.docs;
+    total.value = data.response.numFound;
 
-      // Clean and format facets
-      const facetDetails = Object.entries(data.facet_counts.facet_fields) as [string, (string | number)[]][];
+    // Clean and format facets
+    const facetDetails = Object.entries(data.facet_counts.facet_fields) as [string, (string | number)[]][];
 
-      const facetsCleaned = facetDetails.reduce(
-        (
-          acc: Record<string, { val: string; count: number }[]>,
-          [facetName, facetPairs]: [string, (string | number)[]]
-        ) => {
-          acc[facetName] = [];
-          for (let i = 0; i < facetPairs.length; i += 2) {
-            acc[facetName].push({
-              val: facetPairs[i] as string,
-              count: facetPairs[i + 1] as number,
-            });
-          }
-          return acc;
-        },
-        {} as Record<string, { val: string; count: number }[]>
-      );
+    const facetsCleaned = facetDetails.reduce(
+      (
+        acc: Record<string, { val: string; count: number }[]>,
+        [facetName, facetPairs]: [string, (string | number)[]]
+      ) => {
+        acc[facetName] = [];
+        for (let i = 0; i < facetPairs.length; i += 2) {
+          acc[facetName].push({
+            val: facetPairs[i] as string,
+            count: facetPairs[i + 1] as number,
+          });
+        }
+        return acc;
+      },
+      {} as Record<string, { val: string; count: number }[]>
+    );
 
-      facets.value = facetsCleaned;
-    }
+    facets.value = facetsCleaned;
+    is_loading.value = false
   } catch (error) {
-    throw_error(error instanceof Error ? error.message : String(error));
+    if (request === request_id) throw_error(error instanceof Error ? error.message : String(error));
   }
 }
 
 // Remaps values in place (original keys/page/order kept) so the replace can't loop or strip state.
-const canonicalise_facet_values = async (): Promise<void> => {
+const canonicalise_facet_values = async (): Promise<boolean> => {
   let changed = false
   const query: Record<string, LocationQueryValue | LocationQueryValue[]> = {}
 
@@ -245,25 +245,30 @@ const canonicalise_facet_values = async (): Promise<void> => {
   }
 
   if (changed) await router.replace({ name: 'search', query })
+  return changed
 }
 
-onMounted(async () => {
-  window.scrollTo(0, 0)
-  await canonicalise_facet_values()
-  await fetchData(currentPage.value).then(() => {
-    is_loading.value = false
-  })
-})
+watch(
+  () => route.fullPath,
+  async () => {
+    currentPage.value = get_current_page()
+    window.scrollTo(0, 0)
+    // A replace re-triggers this watcher, which fetches for the canonical URL.
+    if (await canonicalise_facet_values()) return
+    await fetchData(currentPage.value)
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
   <campl-page-header :keywords="keyword_string" :key="keyword_string" />
   <div class="resultsHeader container-fluid">
 
-    <div class="row darwin-search-results" v-show="is_loading">
+    <div class="row" v-show="is_loading">
               <CSpinner />
     </div>
-    <div class="row darwin-search-results" v-if="is_error['bool']">
+    <div class="row" v-if="is_error['bool']">
       <p>
         I'm sorry, I'm unable to complete your request ({{
           is_error['message']
@@ -271,7 +276,7 @@ onMounted(async () => {
       </p>
       <p>Please try again in a few minutes</p>
     </div>
-    <div v-show="!is_loading && !is_error['bool']" :key="route.fullPath">
+    <div v-show="!is_loading && !is_error['bool']">
       <div class="row">
         <div class="col">
           <div class="row">
@@ -294,59 +299,21 @@ onMounted(async () => {
         </div>
         <div class="col-auto text-right">
 
-              <form method="get" action="/search" v-show="total >= 1">
+              <div v-show="total >= 1">
                 <div class="form-row d-inline-flex">
                   <div class="col-auto">
                     <b>Sorted by:</b>
                   </div>
                   <div class="col-auto">
-                    <select class="form-control form-control-sm" size="1" name="sort">
-                  {{
-                    sort
-                  }}
-                  <option
-                    value="score"
-                    :selected="sort == 'score'"
-                  >
-                    relevance
-                  </option>
-                  <option
-                    value="author"
-                    :selected="sort == 'author'"
-                  >
-                    author
-                  </option>
-                  <option
-                    value="addressee"
-                    :selected="sort == 'addressee'"
-                  >
-                    addressee
-                  </option>
-                  <option
-                    value="date"
-                    :selected="sort == 'date'"
-                  >
-                    date
-                  </option>
-                </select>
+                    <select class="form-control form-control-sm" size="1" name="sort" :value="sort" @change="onSort">
+                      <option value="score">relevance</option>
+                      <option value="author">author</option>
+                      <option value="addressee">addressee</option>
+                      <option value="date">date</option>
+                    </select>
                   </div>
-                <input
-                  v-for="obj in filtering_params"
-                  type="hidden"
-                  :name="String(obj.key)"
-                  :value="obj.value"
-                  :key="obj.key + obj.value"
-                />
-                <input type="hidden" name="page" value="1" />
-                &nbsp;<input class="btn btn-info btn-sm" type="submit" value="Go!" />
-
-            </div>
-              </form>
-            <!--<div class="mt-2 small">
-              <a
-                href="https://epsilon.ac.uk/search?keyword=water&amp;f1-correspondent=Faraday%2C%20Michael&amp;f1-document-type=letter&amp;f1-date=1860-1869%3A%3A1861&amp;smode=embedded-modify"
-              >Modify Search</a>
-            </div>-->
+                </div>
+              </div>
 
         </div>
       </div>
@@ -385,6 +352,8 @@ onMounted(async () => {
     </div>
   <div class="col-md-4 order-2 order-md-1 col-12 mt-3 mt-md-0">
 
+          <AdvancedSearch :params="all_params" />
+
           <div class="facet">
 
               <facet-block
@@ -393,7 +362,7 @@ onMounted(async () => {
                 :facets="facets"
                 :facet_key="implementation.facet_key"
                 :params="all_params"
-                :key="filtering_params_string+'::'+facet"
+                :key="facet"
               />
 
           </div>
@@ -401,12 +370,13 @@ onMounted(async () => {
       </div>
     </div>
       <NoResults
-        :keyword="keyword_string"
+        :params="all_params"
         v-else-if="total === 0"
       />
   </div>
 </div>
   <PaginationBar
+    v-show="!is_loading && !is_error['bool'] && total >= 1"
     :total="total"
     :items-per-page="items_per_page"
     :current-page="currentPage"
@@ -507,16 +477,6 @@ a.page-link.active-page:hover {
 }
 
 
-
-#page-content .modify_advanced a,
-#page-content .modify_advanced a:visited {
-  color: #fff;
-  background-color: #4b701c;
-  padding: 3px 12px;
-  border-radius: 24px;
-  margin-top: 10px;
-  box-shadow: rgba(0, 0, 0, 0.27) 1px 1px 5px;
-}
 
 #page-content .search-results-page .search-result-item h2 a {
   color: #111;
